@@ -13,13 +13,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- FONCTION DE NORMALISATION DE TEXTE (SANS ACCENTS, LOWERCASE) ---
+# --- NORMALISATION DU TEXTE (SANS ACCENTS) ---
 def norm_text(text):
     if not text:
         return ""
     return ''.join(c for c in unicodedata.normalize('NFD', str(text).lower()) if unicodedata.category(c) != 'Mn')
 
-# --- STYLES CSS PERSONNALISÉS (LUMBILITÉ MAXIMALE & COULEURS EXACTES) ---
+# --- STYLES CSS PERSONNALISÉS ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400&display=swap');
@@ -42,9 +42,9 @@ st.markdown("""
         background-attachment: fixed !important;
     }
 
-    /* Titre Principal IMPOSANT & LUMINEUX */
+    /* Titre Principal GRAND & IMPOSANT (Demande utilisateur) */
     .stApp h1, h1, .main h1 {
-        font-size: 2.3rem !important;
+        font-size: 2.5rem !important;
         font-weight: 900 !important;
         color: #FF9E00 !important;
         text-shadow: 0 0 15px rgba(255, 158, 0, 0.8), 2px 2px 5px #000000 !important;
@@ -57,67 +57,53 @@ st.markdown("""
         font-weight: 700 !important;
     }
 
-    /* FORÇAGE DU TEXTE EN VIOLET CLAIR / BLANC SUR LE LIBELLÉ DU SELECTBOX */
-    .stSelectbox label, 
-    .stSelectbox label *, 
-    label[data-testid="stWidgetLabel"], 
-    label[data-testid="stWidgetLabel"] * {
+    /* LIBELLÉ / TITRE AU-DESSUS DE LA LISTE DÉROULANTE : Violet clair bien lisible sur fond sombre */
+    .stSelectbox label, .stSelectbox label p, div[data-testid="stWidgetLabel"] p {
         color: #E0AAFF !important;
-        font-weight: 800 !important;
         font-size: 1.15rem !important;
+        font-weight: 800 !important;
     }
 
-    /* BOÎTE DU SELECTBOX EN ORANGE ET TEXTE NOIR TRÈS LISIBLE */
-    div[data-baseweb="select"] > div {
+    /* CARTOUCHE DE LA LISTE DÉROULANTE (SELECTBOX) : Orange citrouille avec texte NOIR */
+    .stSelectbox > div > div, div[data-baseweb="select"], div[data-baseweb="select"] > div {
         background-color: #FF9E00 !important;
         border: 3px solid #FFFFFF !important;
         border-radius: 12px !important;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
     }
-    
-    div[data-baseweb="select"] div, 
+
+    /* Texte sélectionné dans la liste déroulante : NOIR GRAS */
     div[data-baseweb="select"] span, 
-    div[data-baseweb="select"] p,
-    div[data-baseweb="select"] input {
+    div[data-baseweb="select"] div,
+    div[data-baseweb="select"] input,
+    .stSelectbox [data-testid="stMarkdownContainer"] p {
         color: #000000 !important;
         font-weight: 900 !important;
         font-size: 1.1rem !important;
-    }
-    
-    div[data-baseweb="select"] svg {
-        fill: #000000 !important;
-        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
     }
 
-    /* MENU DÉROULANT DES OPTIONS */
-    div[data-baseweb="popover"], 
-    div[data-baseweb="menu"], 
-    ul[role="listbox"] {
-        background-color: #2D1442 !important;
+    /* MENU DÉROULANT (POPOVER OPTIONS) : Fond Blanc / Texte NOIR */
+    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
+        background-color: #FFFFFF !important;
         border: 2px solid #FF9E00 !important;
-        border-radius: 12px !important;
+        border-radius: 10px !important;
     }
 
-    li[role="option"] {
-        background-color: #2D1442 !important;
-        border-bottom: 1px solid #3D1B59 !important;
-        padding: 12px !important;
+    li[role="option"], li[role="option"] span, li[role="option"] div {
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
+        font-weight: 800 !important;
+        font-size: 1rem !important;
+        -webkit-text-fill-color: #000000 !important;
     }
 
-    li[role="option"] * {
-        color: #FFFFFF !important;
-        font-weight: 700 !important;
-    }
-
-    li[role="option"]:hover, 
-    li[role="option"]:hover *, 
-    li[data-highlighted="true"], 
-    li[data-highlighted="true"] * {
+    li[role="option"]:hover, li[role="option"]:hover *, li[data-highlighted="true"], li[data-highlighted="true"] * {
         background-color: #FF9E00 !important;
         color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
     }
 
-    /* FORÇAGE DU TEXTE NOIR SUR TOUS LES BOUTONS CLIQUABLES */
+    /* BOUTONS CLIQUABLES : Fond Orange Citrouille avec TEXTE NOIR GRAS */
     .stButton > button, 
     .stDownloadButton > button, 
     .stFormSubmitButton > button, 
@@ -129,7 +115,7 @@ st.markdown("""
         padding: 10px 20px !important;
         width: 100% !important;
     }
-    
+
     .stButton > button *, 
     .stDownloadButton > button *, 
     .stFormSubmitButton > button *, 
@@ -146,7 +132,7 @@ st.markdown("""
         background: linear-gradient(90deg, #00FFCC 0%, #80FFEA 100%) !important;
         border-color: #FF9E00 !important;
     }
-    
+
     .stButton > button:hover *, 
     .stDownloadButton > button:hover *, 
     .stFormSubmitButton > button:hover *, 
@@ -154,9 +140,9 @@ st.markdown("""
         color: #000000 !important;
     }
 
-    /* TEXTE BLANC DANS LES CARTES ET CONTENUS EXPLICATIFS */
-    .journal-card, .journal-card p, .journal-card li, .journal-card span, .journal-card b,
-    .grimoire-card, .grimoire-card p, .grimoire-card li, .grimoire-card span, .grimoire-card b,
+    /* RESTAURATION DU TEXTE BLANC DANS LES CARTES ET CONTENUS (Demande utilisateur) */
+    .journal-card, .journal-card p, .journal-card ul, .journal-card li, .journal-card span,
+    .grimoire-card, .grimoire-card p, .grimoire-card ul, .grimoire-card li, .grimoire-card span,
     .warning-box, .warning-box p, .warning-box span, .warning-box b,
     .code-box-success, .code-box-success p, .code-box-success span, .code-box-success b,
     .correct-card, .correct-card p, .correct-card span, .correct-card b, .correct-card i,
@@ -263,7 +249,7 @@ def safe_rerun():
     elif hasattr(st, "experimental_rerun"):
         st.experimental_rerun()
 
-# --- RECHERCHE ET AFFICHAGE DES MÉDIAS (SANS PROBLEME D'ACCENTS) ---
+# --- RECHERCHE MULTI-CRITÈRES DE MÉDIAS ---
 def find_media_file_multi(keyword_groups, extension=".mp4"):
     try:
         files = os.listdir(".")
@@ -285,194 +271,76 @@ def display_video_if_exists(keyword_groups, fallback_title):
     else:
         st.info(f"🎬 **Cinéma d'Halloween :** La vidéo *'{fallback_title}'* est prête. *(Déposez le fichier .mp4 sur GitHub pour le lancement direct !)*")
 
-def display_pdf_download_button(keyword_groups, title):
+# --- CONVERSION DES PAGES DU VRAI PDF EN IMAGES HAUTE DÉFINITION ---
+def render_pdf_to_images(file_path):
+    images = []
+    try:
+        import pypdfium2 as pdfium
+        pdf = pdfium.PdfDocument(file_path)
+        for page in pdf:
+            pil_img = page.render(scale=1.6).to_pil()
+            images.append(pil_img)
+        return images
+    except Exception:
+        pass
+
+    try:
+        from pdf2image import convert_from_path
+        return convert_from_path(file_path)
+    except Exception:
+        pass
+
+    return images
+
+def display_pdf_if_exists(keyword_groups, title, key_prefix):
     pdf_file = find_media_file_multi(keyword_groups, ".pdf")
     if pdf_file:
-        st.success(f"📜 **Fichier PDF sur GitHub :** `{pdf_file}`")
-        try:
-            with open(pdf_file, "rb") as f:
-                st.download_button(f"📥 Télécharger {title} (Fichier PDF)", f, file_name=pdf_file, mime="application/pdf", key=f"dl_{hashlib.md5(pdf_file.encode()).hexdigest()}")
-        except Exception:
-            pass
-
-# --- LISEUSE MAGIQUE INTERACTIVE (LECTURE UNIVERSELLE DU JOURNAL ET DU GRIMOIRE) ---
-def render_liseuse_journal_lea():
-    st.markdown("### 📖 Liseuse Numérique : Journal de la Quête (Léa 6ème)")
-    
-    pages = [
-        ("Page 1 : 🏰 Couverture & Légende du Manoir", """
-            <div class="journal-card">
-                <h2 style="color: #FF9E00 !important; text-align: center;">📜 LE JOURNAL DE LA QUÊTE</h2>
-                <h3 style="color: #00FFCC !important; text-align: center;">La Malédiction de la Citrouille d'Émeraude (6ème)</h3>
-                <p><b>Apprentie Sorcière :</b> Léa</p>
-                <p><b>Royaume :</b> Le Manoir des 5 Éléments</p>
-                <hr style="border-color: #C77DFF;">
-                <p><b>Légende d'Halloween :</b> La célèbre Citrouille d'Émeraude qui illuminait le Manoir a été scellée par 5 verrous maléfiques. Pour lever la malédiction, Léa doit traverser les 5 salles hantées, réussir les 20 épreuves de cours quotidiennes et inscrire les 5 Mots-Pouvoirs dans son Journal.</p>
-            </div>
-        """),
-        ("Page 2 : 🗺️ Carte des 5 Salles du Manoir", """
-            <div class="journal-card">
-                <h3 style="color: #FF9E00 !important;">🗺️ CARTE DES 5 SALLES HANTÉES</h3>
-                <ul>
-                    <li><b>Jour 1 :</b> 🖼️ La Galerie des Créatures & des Parchemins Hantés</li>
-                    <li><b>Jour 2 :</b> 🌕 L'Observatoire de la Pleine Lune & des Étoiles</li>
-                    <li><b>Jour 3 :</b> 🕸️ Le Labyrinthe des Toiles Géométriques & des Chaudrons</li>
-                    <li><b>Jour 4 :</b> 🏛️ La Crypte des Anciens Rois & des Hiéroglyphes</li>
-                    <li><b>Jour 5 :</b> 🎃 La Salle de la Citrouille d'Émeraude (Rituel Ultime)</li>
-                </ul>
-            </div>
-        """),
-        ("Page 3 : 🖼️ Fiche Jour 1 — La Galerie des Créatures", """
-            <div class="journal-card">
-                <h3 style="color: #FF9E00 !important;">🖼️ JOUR 1 : LA GALERIE DES CRÉATURES</h3>
-                <p><b>Épreuve :</b> Affronter la gargouille et classifier les créatures hybrides.</p>
-                <p><b>Matières :</b> Français, Maths, Sciences, Hist-Géo, Anglais.</p>
-                <div style="background: #2D1442; border: 2px dashed #00FFCC; padding: 15px; border-radius: 10px; text-align: center;">
-                    <p style="color: #00FFCC !important; font-weight: bold; margin: 0;">MOT-POUVOIR N°1 : GALERIE-CONTE-6E</p>
-                </div>
-            </div>
-        """),
-        ("Page 4 : 🌕 Fiche Jour 2 — L'Observatoire", """
-            <div class="journal-card">
-                <h3 style="color: #FF9E00 !important;">🌕 JOUR 2 : L'OBSERVATOIRE DE LA PLEINE LUNE</h3>
-                <p><b>Épreuve :</b> Aligner les télescopes vers le Soleil et mesurer la rotation de la Terre.</p>
-                <div style="background: #2D1442; border: 2px dashed #00FFCC; padding: 15px; border-radius: 10px; text-align: center;">
-                    <p style="color: #00FFCC !important; font-weight: bold; margin: 0;">MOT-POUVOIR N°2 : OBSERVA-TERRE-6E</p>
-                </div>
-            </div>
-        """),
-        ("Page 5 : 🕸️ Fiche Jour 3 — Le Labyrinthe des Toiles", """
-            <div class="journal-card">
-                <h3 style="color: #FF9E00 !important;">🕸️ JOUR 3 : LE LABYRINTHE DES TOILES</h3>
-                <p><b>Épreuve :</b> Calculer le périmètre des dalles et doser la potion magique.</p>
-                <div style="background: #2D1442; border: 2px dashed #00FFCC; padding: 15px; border-radius: 10px; text-align: center;">
-                    <p style="color: #00FFCC !important; font-weight: bold; margin: 0;">MOT-POUVOIR N°3 : LABYRIN-DECIM-6E</p>
-                </div>
-            </div>
-        """),
-        ("Page 6 : 🏛️ Fiche Jour 4 — La Crypte des Anciens Rois", """
-            <div class="journal-card">
-                <h3 style="color: #FF9E00 !important;">🏛️ JOUR 4 : LA CRYPTE DES ANCIENS ROIS</h3>
-                <p><b>Épreuve :</b> Déchiffrer l'écriture cunéiforme et les papyrus égyptiens.</p>
-                <div style="background: #2D1442; border: 2px dashed #00FFCC; padding: 15px; border-radius: 10px; text-align: center;">
-                    <p style="color: #00FFCC !important; font-weight: bold; margin: 0;">MOT-POUVOIR N°4 : CRYPTE-EGYPTE-6E</p>
-                </div>
-            </div>
-        """),
-        ("Page 7 : 🎃 Fiche Jour 5 — La Citrouille d'Émeraude", """
-            <div class="journal-card">
-                <h3 style="color: #FF9E00 !important;">🎃 JOUR 5 : LE RITUEL ULTIME</h3>
-                <p><b>Épreuve :</b> Assembler les 5 éléments pour briser le dernier sceau.</p>
-                <div style="background: #2D1442; border: 2px dashed #00FFCC; padding: 15px; border-radius: 10px; text-align: center;">
-                    <p style="color: #00FFCC !important; font-weight: bold; margin: 0;">MOT-POUVOIR N°5 : EMERAUDE-FINAL-6E</p>
-                </div>
-            </div>
-        """),
-        ("Page 8 : 🏆 Grille d'Évasion Finale", """
-            <div class="journal-card">
-                <h3 style="color: #FF9E00 !important; text-align: center;">🏆 GRILLE D'ÉVASION ET SCEAU DU MANOIR</h3>
-                <p style="text-align: center;">Saisis les 5 Mots-Pouvoirs débloqués au 20/20 pour célébrer la victoire !</p>
-            </div>
-        """)
-    ]
-    
-    if "p_j_lea" not in st.session_state:
-        st.session_state.p_j_lea = 0
+        st.success(f"📜 **Document officiel trouvé sur GitHub :** `{pdf_file}`")
         
-    c1, c2, c3 = st.columns([1, 3, 1])
-    with c1:
-        if st.button("⬅️ Page Précédente", key="btn_prev_j_lea"):
-            st.session_state.p_j_lea = max(0, st.session_state.p_j_lea - 1)
-            safe_rerun()
-    with c2:
-        st.markdown(f"<p style='text-align:center; font-weight:bold; color:#E0AAFF;'>📖 {pages[st.session_state.p_j_lea][0]} ({st.session_state.p_j_lea + 1} / {len(pages)})</p>", unsafe_allow_html=True)
-    with c3:
-        if st.button("Page Suivante ➡️", key="btn_next_j_lea"):
-            st.session_state.p_j_lea = min(len(pages) - 1, st.session_state.p_j_lea + 1)
-            safe_rerun()
+        imgs = render_pdf_to_images(pdf_file)
+        if imgs:
+            st.markdown(f"### 📖 Liseuse Numérique : {title} ({len(imgs)} page(s))")
             
-    st.markdown(pages[st.session_state.p_j_lea][1], unsafe_allow_html=True)
+            # Gestion de la page courante en session state
+            state_key = f"pdf_page_{key_prefix}"
+            if state_key not in st.session_state:
+                st.session_state[state_key] = 0
+            
+            curr_idx = st.session_state[state_key]
+            if curr_idx >= len(imgs):
+                curr_idx = 0
+                st.session_state[state_key] = 0
 
-def render_liseuse_grimoire_lea():
-    st.markdown("### 📖 Liseuse Numérique : Le Grimoire du Savoir (Léa 6ème)")
-    
-    pages = [
-        ("Page 1 : 📜 Couverture du Grimoire des 5 Arcanes", """
-            <div class="grimoire-card">
-                <h2 style="color: #FF9E00 !important; text-align: center;">📜 LE GRIMOIRE DU SAVOIR</h2>
-                <h3 style="color: #00FFCC !important; text-align: center;">Les 5 Arcanes de 6ème (Période 1)</h3>
-                <p>Ce manuel contient l'ensemble des leçons, règles et formules magiques pour réussir la quête d'Halloween.</p>
-            </div>
-        """),
-        ("Page 2 : 📐 Arcane 1 — Mathématiques", """
-            <div class="grimoire-card">
-                <h3 style="color: #FF9E00 !important;">📐 ARCANE 1 : MATHEMATIQUES</h3>
-                <ul>
-                    <li><b>Nombres Décimaux :</b> Comparaison des chiffres par rang : $12,05 < 12,35 < 12,40$.</li>
-                    <li><b>Calculs :</b> $12,05 + 3,40 = 15,45$.</li>
-                    <li><b>Périmètre du carré :</b> $P = 4 \times \text{côté}$ ($1,5\text{ m} \times 4 = 6\text{ m}$).</li>
-                    <li><b>Fractions :</b> $\frac{3}{4}$ de $24 = (24 \div 4) \times 3 = 18$.</li>
-                </ul>
-            </div>
-        """),
-        ("Page 3 : 📚 Arcane 2 — Français", """
-            <div class="grimoire-card">
-                <h3 style="color: #FF9E00 !important;">📚 ARCANE 2 : FRANÇAIS</h3>
-                <ul>
-                    <li><b>Schéma Narratif :</b> Situation initiale $\rightarrow$ <b>Élément perturbateur</b> $\rightarrow$ Péripéties $\rightarrow$ Dénouement.</li>
-                    <li><b>Créatures du Merveilleux :</b> Une créature <i>hybride</i> associe plusieurs animaux (ex: lion et aigle).</li>
-                    <li><b>Grammaire :</b> L'adjectif qualificatif s'accorde en genre et en nombre avec le nom qu'il qualifie.</li>
-                </ul>
-            </div>
-        """),
-        ("Page 4 : 🔬 Arcane 3 — Sciences", """
-            <div class="grimoire-card">
-                <h3 style="color: #FF9E00 !important;">🔬 ARCANE 3 : SCIENCES & ASTROLOGIE</h3>
-                <ul>
-                    <li><b>Système Solaire :</b> Le Soleil au centre, 4 planètes telluriques solides.</li>
-                    <li><b>Mouvements de la Terre :</b> Rotation (24h - jour/nuit) et Révolution (365,25 jours - 1 an).</li>
-                    <li><b>Les Êtres Vivants :</b> Tous naissent, se nourrissent, grandissent et se reproduisent. L'eau liquide est indispensable.</li>
-                    <li><b>Classification :</b> Les arachnides ont 8 pattes (4 paires) et aucune antenne.</li>
-                </ul>
-            </div>
-        """),
-        ("Page 5 : 🏛️ Arcane 4 — Histoire-Géographie & EMC", """
-            <div class="grimoire-card">
-                <h3 style="color: #FF9E00 !important;">🏛️ ARCANE 4 : HISTOIRE-GÉO & EMC</h3>
-                <ul>
-                    <li><b>Écriture :</b> Née vers 3500 av. J.-C. en Mésopotamie (écriture cunéiforme en forme de coins).</li>
-                    <li><b>Néolithique :</b> Révolution de la sédentarité, de l'agriculture et de l'élevage.</li>
-                    <li><b>EMC :</b> Les règles de vie garantissent le vivre-ensemble et le respect de chacun.</li>
-                </ul>
-            </div>
-        """),
-        ("Page 6 : 🇬🇧 Arcane 5 — Anglais", """
-            <div class="grimoire-card">
-                <h3 style="color: #FF9E00 !important;">🇬🇧 ARCANE 5 : LANGUES ANCIENNES (ANGLAIS)</h3>
-                <ul>
-                    <li><b>Vocabulaire :</b> <i>A glue stick</i> (un bâton de colle), <i>To spell</i> (épeler).</li>
-                    <li><b>Expressions :</b> <i>How old are you?</i> (Quel âge as-tu ?), <i>Can you help me please?</i> (Pouvez-vous m'aider ?).</li>
-                </ul>
-            </div>
-        """)
-    ]
-    
-    if "p_g_lea" not in st.session_state:
-        st.session_state.p_g_lea = 0
-        
-    c1, c2, c3 = st.columns([1, 3, 1])
-    with c1:
-        if st.button("⬅️ Page Précédente", key="btn_prev_g_lea"):
-            st.session_state.p_g_lea = max(0, st.session_state.p_g_lea - 1)
-            safe_rerun()
-    with c2:
-        st.markdown(f"<p style='text-align:center; font-weight:bold; color:#E0AAFF;'>📖 {pages[st.session_state.p_g_lea][0]} ({st.session_state.p_g_lea + 1} / {len(pages)})</p>", unsafe_allow_html=True)
-    with c3:
-        if st.button("Page Suivante ➡️", key="btn_next_g_lea"):
-            st.session_state.p_g_lea = min(len(pages) - 1, st.session_state.p_g_lea + 1)
-            safe_rerun()
-            
-    st.markdown(pages[st.session_state.p_g_lea][1], unsafe_allow_html=True)
+            # Barre de navigation entre les pages
+            col_nav1, col_nav2, col_nav3 = st.columns([1, 2, 1])
+            with col_nav1:
+                if st.button("⬅️ Page Précédente", key=f"btn_prev_{key_prefix}"):
+                    if st.session_state[state_key] > 0:
+                        st.session_state[state_key] -= 1
+                        safe_rerun()
+            with col_nav2:
+                st.markdown(f"<h4 style='text-align: center; color: #00FFCC !important;'>Page {st.session_state[state_key] + 1} / {len(imgs)}</h4>", unsafe_allow_html=True)
+            with col_nav3:
+                if st.button("Page Suivante ➡️", key=f"btn_next_{key_prefix}"):
+                    if st.session_state[state_key] < len(imgs) - 1:
+                        st.session_state[state_key] += 1
+                        safe_rerun()
+
+            # Affichage de l'image exacte de la page du PDF
+            st.image(imgs[st.session_state[state_key]], caption=f"Page {st.session_state[state_key] + 1} sur {len(imgs)} - {title}", use_container_width=True)
+
+            # Option pour déplier toutes les pages à la suite
+            with st.expander(f"🔍 Afficher toutes les {len(imgs)} pages du document à la suite"):
+                for idx, img in enumerate(imgs):
+                    st.image(img, caption=f"Page {idx + 1} / {len(imgs)}", use_container_width=True)
+        else:
+            st.info("📄 Le fichier PDF est détecté. Utilisez le bouton ci-dessous pour le consulter ou le télécharger :")
+
+        with open(pdf_file, "rb") as f:
+            st.download_button(f"📥 Télécharger {title} (Fichier PDF d'origine)", f, file_name=pdf_file, mime="application/pdf", key=f"dl_{hashlib.md5(pdf_file.encode()).hexdigest()}")
+    else:
+        st.info(f"📖 **{title}** *(Déposez le fichier PDF sur GitHub pour le feuilleter directement en grand ici !)*")
+    return pdf_file
 
 # --- INITIALISATION SESSION ---
 if "selected_hero" not in st.session_state:
@@ -498,9 +366,9 @@ CODES_LUCAS = {
     5: "PORTAIL-SCIENCE-4E"
 }
 
-# --- EN-TÊTE PRINCIPAL & BANNIÈRE HALLOWEEN ---
-st.markdown("""<h1 style="font-size: 2.3rem !important; color: #FF9E00 !important; text-align: center;">🎃 L'Académie d'Halloween : Portails d'Évasion</h1>""", unsafe_allow_html=True)
-st.markdown("""<p style="font-size: 1.1rem !important; color: #E0AAFF !important; text-align: center; font-weight: bold; margin-bottom: 20px;">🕸️ Traversez les salles hantées, résolvez les énigmes de cours et débloquez les Mots-Pouvoirs ! 🕯️</p>""", unsafe_allow_html=True)
+# --- EN-TÊTE PRINCIPAL GRAND FORMAT & BANNIÈRE HALLOWEEN ---
+st.markdown("""<h1 style="font-size: 2.5rem !important; color: #FF9E00 !important; text-align: center;">🎃 L'Académie d'Halloween : Portails d'Évasion</h1>""", unsafe_allow_html=True)
+st.markdown("""<p style="font-size: 1.25rem !important; color: #E0AAFF !important; text-align: center; font-weight: bold; margin-bottom: 25px;">🕸️ Traversez les salles hantées, résolvez les énigmes de cours et débloquez les Mots-Pouvoirs ! 🕯️</p>""", unsafe_allow_html=True)
 
 # Sélection ludique des Avatars
 col_avatar1, col_avatar2 = st.columns(2)
@@ -510,9 +378,9 @@ with col_avatar1:
     border_style = "avatar-selected" if is_active_lea else ""
     st.markdown(f"""
         <div class="avatar-card {border_style}">
-            <h2 style="color: #FF9E00 !important; margin-bottom: 5px;">🔮 Léa — 6ème</h2>
-            <p style="font-size: 1.1rem; color: #00FFCC !important; font-weight: bold;">L'Apprentie Sorcière du Manoir</p>
-            <p style="margin: 10px 0;">🏰 <b>Quête :</b> La Malédiction de la Citrouille d'Émeraude<br>📚 <b>Matières :</b> Français, Maths, Sciences, Hist-Géo, Anglais</p>
+            <h2 style="color: #FF9E00 !important; margin-bottom: 5px; font-size: 1.8rem !important;">🔮 Léa — 6ème</h2>
+            <p style="font-size: 1.2rem; color: #00FFCC !important; font-weight: bold;">L'Apprentie Sorcière du Manoir</p>
+            <p style="margin: 10px 0; color: #FFFFFF !important;">🏰 <b>Quête :</b> La Malédiction de la Citrouille d'Émeraude<br>📚 <b>Matières :</b> Français, Maths, Sciences, Hist-Géo, Anglais</p>
         </div>
     """, unsafe_allow_html=True)
     if st.button("🧙‍♀️ Incarner Léa (6ème)", key="btn_hero_lea"):
@@ -524,9 +392,9 @@ with col_avatar2:
     border_style = "avatar-selected" if is_active_lucas else ""
     st.markdown(f"""
         <div class="avatar-card {border_style}">
-            <h2 style="color: #FF9E00 !important; margin-bottom: 5px;">⚡ Lucas — 4ème</h2>
-            <p style="font-size: 1.1rem; color: #00FFCC !important; font-weight: bold;">L'Alchimiste & Chasseur d'Ombres</p>
-            <p style="margin: 10px 0;">🦇 <b>Quête :</b> Le Mystère de la Crypte des Ombres<br>🔬 <b>Matières :</b> 8 Matières de 4ème (Sciences, Techno, Langues...)</p>
+            <h2 style="color: #FF9E00 !important; margin-bottom: 5px; font-size: 1.8rem !important;">⚡ Lucas — 4ème</h2>
+            <p style="font-size: 1.2rem; color: #00FFCC !important; font-weight: bold;">L'Alchimiste & Chasseur d'Ombres</p>
+            <p style="margin: 10px 0; color: #FFFFFF !important;">🦇 <b>Quête :</b> Le Mystère de la Crypte des Ombres<br>🔬 <b>Matières :</b> 8 Matières de 4ème (Sciences, Techno, Langues...)</p>
         </div>
     """, unsafe_allow_html=True)
     if st.button("🧛‍♂️ Incarner Lucas (4ème)", key="btn_hero_lucas"):
@@ -557,8 +425,19 @@ if st.session_state.selected_hero == "lea":
     
     # --- TAB 1 : JOURNAL DE LA QUÊTE ---
     with tab_accueil_journal:
-        render_liseuse_journal_lea()
-        display_pdf_download_button([["journal", "6"], ["journal", "citrouille"], ["journal", "lea"]], "Le Journal de la Quête - Léa 6ème")
+        st.subheader("📜 Carnet de Bord d'Évasion : La Citrouille d'Émeraude")
+        st.markdown("""
+            <div class="journal-card">
+                <h3 style="color: #FF9E00 !important;">🏰 Bienvenue dans ton Journal de la Quête, Léa !</h3>
+                <p style="color: #FFFFFF !important;">Ce carnet magique contient ta feuille de route pour libérer la <b>Citrouille d'Émeraude</b> de la malédiction du Manoir des Sorciers.</p>
+                <ul style="color: #FFFFFF !important;">
+                    <li style="color: #FFFFFF !important;"><b>Objectif :</b> Parcourir les 5 Salles Hantées en obtenant <b>20/20 à chaque épreuve</b>.</li>
+                    <li style="color: #FFFFFF !important;"><b>Mots-Pouvoirs :</b> Chaque sans-faute te délivre un <b>Mot-Pouvoir</b> à inscrire dans ton Journal.</li>
+                </ul>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        display_pdf_if_exists([["journal", "6"], ["journal", "citrouille"], ["journal", "lea"]], "Le Journal de la Quête - Léa 6ème", "journal_lea")
         
         st.subheader("🗺️ Carte du Manoir & Mots-Pouvoirs Débloqués")
         col_j1, col_j2, col_j3 = st.columns(3)
@@ -637,7 +516,7 @@ if st.session_state.selected_hero == "lea":
                 display_video_if_exists([["jour 1", "6"], ["galerie", "6"], ["jour 1"], ["jour 2", "6"], ["jour 3", "6"], ["jour 4", "6"], ["jour 5", "6"]], f"Teaser Vidéo - Jour {j_sel}")
                 
                 st.subheader("🧪 Épreuve du Jour : Les 20 Questions de Cours Scénarisées du Studio")
-                st.caption("Sélectionnez vos réponses. Dès la validation, les résultats et explications s'afficheront DIRECTEMENT sous chaque question !")
+                st.caption("Sélectionnez la bonne réponse parmi les 4 propositions mélangées pour chaque question.")
                 
                 # BANQUE DE QUESTIONS DU STUDIO POUR LÉA (6ÈME)
                 q_raw_lea = {
@@ -666,9 +545,7 @@ if st.session_state.selected_hero == "lea":
                 }
                 
                 q_list_curr = q_raw_lea.get(j_sel, q_raw_lea[1])
-                sub_key = f"quiz_sub_lea_{j_sel}"
-                is_eval = st.session_state.get(sub_key, False)
-                eval_data = st.session_state.get(f"eval_lea_{j_sel}", [])
+                submitted_key = f"sub_results_lea_{j_sel}"
                 
                 with st.form(key=f"f_lea_{j_sel}"):
                     user_ans = []
@@ -679,38 +556,34 @@ if st.session_state.selected_hero == "lea":
                         chosen = st.radio(f"**{qt}**", opts, key=f"r_{q_id}")
                         user_ans.append((qt, chosen, qcorr, qexp))
                         
-                        # AFFICHAGE DU RÉSULTAT DIRECTEMENT SOUS CHAQUE QUESTION !
-                        if is_eval and idx < len(eval_data):
-                            eqt, euchosen, eqcorr, eqexp = eval_data[idx]
-                            if euchosen == eqcorr:
-                                st.markdown(f"""
-                                    <div class="correct-card">
-                                        🟩 <b>Réponse exacte !</b> (Tu as choisi : <i>{euchosen}</i>)<br>
-                                        💡 <i>Explication : {eqexp}</i>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                            else:
-                                st.markdown(f"""
-                                    <div class="wrong-card">
-                                        libre 🟥 <b>Incorrect !</b> Tu as choisi : <strike>{euchosen}</strike> ❌<br>
-                                        ✅ Bonne réponse : <b>{eqcorr}</b><br>
-                                        💡 <i>Explication : {eqexp}</i>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                        st.markdown("<hr style='border-color: #3D1B59; margin: 15px 0;'>", unsafe_allow_html=True)
+                        # AFFICHAGE DE LA CORRECTION DIRECTEMENT SOUS CHAQUE QUESTION (Demande utilisateur)
+                        if submitted_key in st.session_state:
+                            res_list = st.session_state[submitted_key]
+                            if idx < len(res_list):
+                                _, u_a, c_a, exp = res_list[idx]
+                                if u_a == c_a:
+                                    st.markdown(f"""
+                                        <div class="correct-card">
+                                            🟩 <b>Ta réponse :</b> <i>{u_a}</i> (Exact !)<br>
+                                            💡 <b>Explication :</b> {exp}
+                                        </div>
+                                    """, unsafe_allow_html=True)
+                                else:
+                                    st.markdown(f"""
+                                        <div class="wrong-card">
+                                            libre 🟥 <b>Ta réponse :</b> <strike>{u_a}</strike> ❌ | ✅ <b>Bonne réponse :</b> {c_a}<br>
+                                            💡 <b>Explication :</b> {exp}
+                                        </div>
+                                    """, unsafe_allow_html=True)
                     
                     sub = st.form_submit_button("📜 Valider l'Épreuve au Maître du Manoir")
                 
                 if sub:
-                    st.session_state[sub_key] = True
-                    st.session_state[f"eval_lea_{j_sel}"] = user_ans
-                    safe_rerun()
-                
-                if is_eval and eval_data:
-                    score = sum([1 for item in eval_data if item[1] == item[2]])
-                    total = len(eval_data)
+                    st.session_state[submitted_key] = user_ans
+                    score = sum([1 for item in user_ans if item[1] == item[2]])
+                    total = len(user_ans)
                     
-                    st.subheader(f"📊 Résultat Global de l'Épreuve : {score} / {total}")
+                    st.subheader(f"📊 Résultat de l'Épreuve : {score} / {total}")
                     
                     if score == total:
                         st.session_state.unlocked_lea.add(j_sel + 1)
@@ -726,15 +599,26 @@ if st.session_state.selected_hero == "lea":
                         st.markdown(f"""
                             <div class="warning-box">
                                 🔒 <b>SCORE : {score} / {total}. LE CODE RESTE SCELLÉ !</b><br>
-                                Tu as fait {total - score} erreur(s). Seul un sans-faute de 20/20 révèle le Code Secret !<br>
-                                Vois les explications vertes et rouges sous chaque question ci-dessus pour réviser puis retente ta chance !
+                                Tu as fait {total - score} erreur(s). Consulte les corrections sous chaque question ci-dessus, révise dans <b>Le Grimoire du Savoir</b> puis retente ta chance !
                             </div>
                         """, unsafe_allow_html=True)
 
     # --- TAB 3 : LE GRIMOIRE DU SAVOIR ---
     with tab_grimoire:
-        render_liseuse_grimoire_lea()
-        display_pdf_download_button([["grimoire", "6"], ["grimoire", "savoir"], ["grimoire", "lea"]], "Le Grimoire du Savoir - Léa 6ème")
+        st.subheader("📚 Le Grimoire du Savoir — Fiches de Révision 6ème")
+        display_pdf_if_exists([["grimoire", "6"], ["grimoire", "savoir"], ["grimoire", "lea"]], "Le Grimoire du Savoir - Léa 6ème", "grimoire_lea")
+        
+        g1, g2, g3, g4, g5 = st.tabs(["📐 Maths", "📚 Français", "🔬 Sciences", "🏛️ Hist-Géo", "🇬🇧 Anglais"])
+        with g1:
+            st.markdown("<div class='grimoire-card'><h4>📐 Mathématiques</h4><ul><li><b>Nombres Décimaux :</b> 12,05 < 12,35 < 12,40.</li><li><b>Calculs :</b> 12,05 + 3,40 = 15,45.</li><li><b>Périmètre du carré :</b> P = 4 × côté.</li><li><b>Fractions :</b> 3/4 de 24 = (24 ÷ 4) × 3 = 18.</li></ul></div>", unsafe_allow_html=True)
+        with g2:
+            st.markdown("<div class='grimoire-card'><h4>📚 Français</h4><ul><li><b>Schéma Narratif :</b> Situation initiale -> Élément perturbateur -> Péripéties -> Dénouement.</li><li><b>Créatures :</b> Une créature hybride associe plusieurs animaux.</li><li><b>Grammaire :</b> L'adjectif qualificatif s'accorde en genre et en nombre avec le nom.</li></ul></div>", unsafe_allow_html=True)
+        with g3:
+            st.markdown("<div class='grimoire-card'><h4>🔬 Sciences</h4><ul><li><b>Système Solaire :</b> Le Soleil au centre, 4 planètes telluriques solides.</li><li><b>Mouvements de la Terre :</b> Rotation (24h) et Révolution (365,25 jours).</li><li><b>Vivants :</b> Tous naissent, se nourrissent et se reproduisent.</li></ul></div>", unsafe_allow_html=True)
+        with g4:
+            st.markdown("<div class='grimoire-card'><h4>🏛️ Histoire-Géo</h4><ul><li><b>Écriture :</b> Né vers 3500 av. J.-C. en Mésopotamie (écriture cunéiforme).</li><li><b>Néolithique :</b> Débuts de l'agriculture, de l'élevage et de la sédentarité.</li></ul></div>", unsafe_allow_html=True)
+        with g5:
+            st.markdown("<div class='grimoire-card'><h4>🇬🇧 Anglais</h4><ul><li><b>Vocabulaire :</b> A glue stick (bâton de colle), To spell (épeler).</li><li><b>Expressions :</b> How old are you?, Can you help me please?</li></ul></div>", unsafe_allow_html=True)
 
 # ==============================================================================
 # SECTION POUR LUCAS (4ÈME)
@@ -750,101 +634,19 @@ else:
     
     # --- TAB 1 : JOURNAL DE LA QUÊTE ---
     with tab_accueil_journal_l:
-        st.markdown("### 📖 Liseuse Numérique : Journal de la Quête (Lucas 4ème)")
+        st.subheader("📜 Carnet de Bord d'Évasion : La Crypte des Ombres")
+        st.markdown("""
+            <div class="journal-card">
+                <h3 style="color: #FF9E00 !important;">🦇 Bienvenue dans ton Journal de la Quête, Lucas !</h3>
+                <p style="color: #FFFFFF !important;">Ce carnet d'alchimie contient la carte de la <b>Crypte des Ombres</b> pour refermer le Portail du Cauchemar.</p>
+                <ul style="color: #FFFFFF !important;">
+                    <li style="color: #FFFFFF !important;"><b>Objectif :</b> Traverser les 5 Salles de la Crypte en obtenant <b>20/20 à chaque épreuve</b>.</li>
+                    <li style="color: #FFFFFF !important;"><b>Codes Secrets :</b> Un sans-faute parfait te délivre le <b>Code Secret</b> requis pour la salle suivante.</li>
+                </ul>
+            </div>
+        """, unsafe_allow_html=True)
         
-        pages_l = [
-            ("Page 1 : 🦇 Couverture & Légende de la Crypte", """
-                <div class="journal-card">
-                    <h2 style="color: #FF9E00 !important; text-align: center;">📜 LE JOURNAL DE LA QUÊTE</h2>
-                    <h3 style="color: #00FFCC !important; text-align: center;">Le Mystère de la Crypte des Ombres (4ème)</h3>
-                    <p><b>Chasseur d'Ombres :</b> Lucas</p>
-                    <p><b>Quête :</b> La Faille Dimensionnelle du Collège</p>
-                    <hr style="border-color: #C77DFF;">
-                    <p>Une faille glaciale s'est ouverte sous le collège ! Pour sceller le Portail du Cauchemar, Lucas doit traverser les 5 salles de la Crypte, obtenir 20/20 aux quiz des 8 matières et collecter les 5 Codes Secrets.</p>
-                </div>
-            """),
-            ("Page 2 : 🗺️ Carte des 5 Salles de la Crypte", """
-                <div class="journal-card">
-                    <h3 style="color: #FF9E00 !important;">🗺️ CARTE DE LA CRYPTE DES OMBRES</h3>
-                    <ul>
-                        <li><b>Jour 1 :</b> 🧪 Le Laboratoire Maudit</li>
-                        <li><b>Jour 2 :</b> 📖 La Bibliothèque des Ombres</li>
-                        <li><b>Jour 3 :</b> ⚙️ La Salle des Engrenages</li>
-                        <li><b>Jour 4 :</b> 👑 Le Tombeau des Rois</li>
-                        <li><b>Jour 5 :</b> 🌌 Le Portail du Cauchemar (La Faille Glaciale)</li>
-                    </ul>
-                </div>
-            """),
-            ("Page 3 : 🧪 Jour 1 — Le Laboratoire Maudit", """
-                <div class="journal-card">
-                    <h3 style="color: #FF9E00 !important;">🧪 JOUR 1 : LE LABORATOIRE MAUDIT</h3>
-                    <p><b>Épreuve :</b> Éteindre les alambics toxiques et analyser la combustion du carbone.</p>
-                    <div style="background: #2D1442; border: 2px dashed #00FFCC; padding: 15px; border-radius: 10px; text-align: center;">
-                        <p style="color: #00FFCC !important; font-weight: bold; margin: 0;">CODE SECRET N°1 : LABO-PYTH-4E</p>
-                    </div>
-                </div>
-            """),
-            ("Page 4 : 📖 Jour 2 — La Bibliothèque des Ombres", """
-                <div class="journal-card">
-                    <h3 style="color: #FF9E00 !important;">📖 JOUR 2 : LA BIBLIOTHÈQUE DES OMBRES</h3>
-                    <p><b>Épreuve :</b> Apaiser les spectres des philosophes des Lumières et réduire les fractions.</p>
-                    <div style="background: #2D1442; border: 2px dashed #00FFCC; padding: 15px; border-radius: 10px; text-align: center;">
-                        <p style="color: #00FFCC !important; font-weight: bold; margin: 0;">CODE SECRET N°2 : BIBLIO-FRACTION-4E</p>
-                    </div>
-                </div>
-            """),
-            ("Page 5 : ⚙️ Jour 3 — La Salle des Engrenages", """
-                <div class="journal-card">
-                    <h3 style="color: #FF9E00 !important;">⚙️ JOUR 3 : LA SALLE DES ENGRENAGES</h3>
-                    <p><b>Épreuve :</b> Configurer la chaîne d'information et régler les relais mécaniques.</p>
-                    <div style="background: #2D1442; border: 2px dashed #00FFCC; padding: 15px; border-radius: 10px; text-align: center;">
-                        <p style="color: #00FFCC !important; font-weight: bold; margin: 0;">CODE SECRET N°3 : ENGRE-TECHNO-4E</p>
-                    </div>
-                </div>
-            """),
-            ("Page 6 : 👑 Jour 4 — Le Tombeau des Rois", """
-                <div class="journal-card">
-                    <h3 style="color: #FF9E00 !important;">👑 JOUR 4 : LE TOMBEAU DES ROIS</h3>
-                    <p><b>Épreuve :</b> Déchiffrer les parchemins du commerce triangulaire et localiser l'hypocentre.</p>
-                    <div style="background: #2D1442; border: 2px dashed #00FFCC; padding: 15px; border-radius: 10px; text-align: center;">
-                        <p style="color: #00FFCC !important; font-weight: bold; margin: 0;">CODE SECRET N°4 : TOMBEAU-HIST-4E</p>
-                    </div>
-                </div>
-            """),
-            ("Page 7 : 🌌 Jour 5 — Le Portail du Cauchemar", """
-                <div class="journal-card">
-                    <h3 style="color: #FF9E00 !important;">🌌 JOUR 5 : LE PORTAIL DU CAUCHEMAR</h3>
-                    <p><b>Épreuve :</b> Activer l'Autel d'Évasion et sceller la Faille glaciale.</p>
-                    <div style="background: #2D1442; border: 2px dashed #00FFCC; padding: 15px; border-radius: 10px; text-align: center;">
-                        <p style="color: #00FFCC !important; font-weight: bold; margin: 0;">CODE SECRET N°5 : PORTAIL-SCIENCE-4E</p>
-                    </div>
-                </div>
-            """),
-            ("Page 8 : 🗝️ Le Verrou du Maître & Évasion", """
-                <div class="journal-card">
-                    <h3 style="color: #FF9E00 !important; text-align: center;">🗝️ LE VERROU DU MAÎTRE</h3>
-                    <p style="text-align: center;">Combine tes 5 Codes Secrets pour sceller définitivement la Faille !</p>
-                </div>
-            """)
-        ]
-        
-        if "p_j_lucas" not in st.session_state:
-            st.session_state.p_j_lucas = 0
-            
-        c1, c2, c3 = st.columns([1, 3, 1])
-        with c1:
-            if st.button("⬅️ Page Précédente", key="btn_prev_j_lucas"):
-                st.session_state.p_j_lucas = max(0, st.session_state.p_j_lucas - 1)
-                safe_rerun()
-        with c2:
-            st.markdown(f"<p style='text-align:center; font-weight:bold; color:#E0AAFF;'>📖 {pages_l[st.session_state.p_j_lucas][0]} ({st.session_state.p_j_lucas + 1} / {len(pages_l)})</p>", unsafe_allow_html=True)
-        with c3:
-            if st.button("Page Suivante ➡️", key="btn_next_j_lucas"):
-                st.session_state.p_j_lucas = min(len(pages_l) - 1, st.session_state.p_j_lucas + 1)
-                safe_rerun()
-                
-        st.markdown(pages_l[st.session_state.p_j_lucas][1], unsafe_allow_html=True)
-        display_pdf_download_button([["journal", "4"], ["journal", "crypte"], ["journal", "lucas"]], "Le Journal de la Quête - Lucas 4ème")
+        display_pdf_if_exists([["journal", "4"], ["journal", "crypte"], ["journal", "lucas"]], "Le Journal de la Quête - Lucas 4ème", "journal_lucas")
         
         st.subheader("🗺️ Carte de la Crypte & Codes Secrets Débloqués")
         col_l1, col_l2, col_l3 = st.columns(3)
@@ -912,7 +714,7 @@ else:
             st.markdown(f"### 📍 {salles_lucas[j_sel]}")
             
             if j_sel == 6:
-                display_video_if_exists([["epilogue", "4"], ["victoire", "4"]], "Épilogue : La Victoire sur la Crypte")
+                display_video_if_exists([["epilogue", "4"], ["victoire", "4"], ["crypte", "4"]], "Épilogue : La Victoire sur la Crypte")
                 st.markdown("""
                     <div class="code-box-success">
                         🎉 <b>TRIOMPHE ÉPIQUE !</b><br>
@@ -923,7 +725,7 @@ else:
                 display_video_if_exists([["jour 1", "4"], ["labo", "4"], ["jour 1"], ["jour 2", "4"], ["jour 3", "4"], ["jour 4", "4"], ["jour 5", "4"]], f"Teaser Vidéo - Jour {j_sel}")
                 
                 st.subheader("🧪 Épreuve du Jour : Les 20 Questions Multi-Matières Scénarisées du Studio")
-                st.caption("Sélectionnez vos réponses. Dès la validation, les résultats et explications s'afficheront DIRECTEMENT sous chaque question !")
+                st.caption("Sélectionnez la bonne réponse parmi les 4 propositions mélangées pour chaque question.")
                 
                 q_raw_lucas = {
                     1: [
@@ -951,9 +753,7 @@ else:
                 }
                 
                 q_list_curr_l = q_raw_lucas.get(j_sel, q_raw_lucas[1])
-                sub_key_l = f"quiz_sub_lucas_{j_sel}"
-                is_eval_l = st.session_state.get(sub_key_l, False)
-                eval_data_l = st.session_state.get(f"eval_lucas_{j_sel}", [])
+                submitted_key_l = f"sub_results_lucas_{j_sel}"
                 
                 with st.form(key=f"f_lucas_{j_sel}"):
                     user_ans_l = []
@@ -964,38 +764,34 @@ else:
                         chosen = st.radio(f"**{qt}**", opts, key=f"r_{q_id}")
                         user_ans_l.append((qt, chosen, qcorr, qexp))
                         
-                        # AFFICHAGE DU RÉSULTAT DIRECTEMENT SOUS CHAQUE QUESTION !
-                        if is_eval_l and idx < len(eval_data_l):
-                            eqt, euchosen, eqcorr, eqexp = eval_data_l[idx]
-                            if euchosen == eqcorr:
-                                st.markdown(f"""
-                                    <div class="correct-card">
-                                        🟩 <b>Réponse exacte !</b> (Tu as choisi : <i>{euchosen}</i>)<br>
-                                        💡 <i>Explication : {eqexp}</i>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                            else:
-                                st.markdown(f"""
-                                    <div class="wrong-card">
-                                        libre 🟥 <b>Incorrect !</b> Tu as choisi : <strike>{euchosen}</strike> ❌<br>
-                                        ✅ Bonne réponse : <b>{eqcorr}</b><br>
-                                        💡 <i>Explication : {eqexp}</i>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                        st.markdown("<hr style='border-color: #3D1B59; margin: 15px 0;'>", unsafe_allow_html=True)
+                        # CORRECTION SOUS CHAQUE QUESTION POUR LUCAS
+                        if submitted_key_l in st.session_state:
+                            res_list_l = st.session_state[submitted_key_l]
+                            if idx < len(res_list_l):
+                                _, u_a, c_a, exp = res_list_l[idx]
+                                if u_a == c_a:
+                                    st.markdown(f"""
+                                        <div class="correct-card">
+                                            🟩 <b>Ta réponse :</b> <i>{u_a}</i> (Exact !)<br>
+                                            💡 <b>Explication :</b> {exp}
+                                        </div>
+                                    """, unsafe_allow_html=True)
+                                else:
+                                    st.markdown(f"""
+                                        <div class="wrong-card">
+                                            libre 🟥 <b>Ta réponse :</b> <strike>{u_a}</strike> ❌ | ✅ <b>Bonne réponse :</b> {c_a}<br>
+                                            💡 <b>Explication :</b> {exp}
+                                        </div>
+                                    """, unsafe_allow_html=True)
                     
                     sub_l = st.form_submit_button("⚡ Activer l'Autel d'Évasion")
                 
                 if sub_l:
-                    st.session_state[sub_key_l] = True
-                    st.session_state[f"eval_lucas_{j_sel}"] = user_ans_l
-                    safe_rerun()
-                
-                if is_eval_l and eval_data_l:
-                    score_l = sum([1 for item in eval_data_l if item[1] == item[2]])
-                    total_l = len(eval_data_l)
+                    st.session_state[submitted_key_l] = user_ans_l
+                    score_l = sum([1 for item in user_ans_l if item[1] == item[2]])
+                    total_l = len(user_ans_l)
                     
-                    st.subheader(f"📊 Résultat Global de l'Épreuve : {score_l} / {total_l}")
+                    st.subheader(f"📊 Résultat de l'Épreuve : {score_l} / {total_l}")
                     
                     if score_l == total_l:
                         st.session_state.unlocked_lucas.add(j_sel + 1)
@@ -1011,96 +807,25 @@ else:
                         st.markdown(f"""
                             <div class="warning-box">
                                 🔒 <b>SCORE : {score_l} / {total_l}. LE CODE RESTE SCELLÉ !</b><br>
-                                Tu as fait {total_l - score_l} erreur(s). Seul un 20/20 révèle le Code Secret !<br>
-                                Vois les explications vertes et rouges sous chaque question ci-dessus pour réviser puis retente ta chance !
+                                Tu as fait {total_l - score_l} erreur(s). Consulte les corrections sous chaque question ci-dessus, révise dans <b>Le Grimoire des Sortilèges</b> puis retente ta chance !
                             </div>
                         """, unsafe_allow_html=True)
 
     # --- TAB 3 : LE GRIMOIRE DES SORTILÈGES ---
     with tab_grimoire_l:
-        st.markdown("### 📖 Liseuse Numérique : Le Grimoire des Sortilèges (Lucas 4ème)")
+        st.subheader("📖 Le Grimoire des Sortilèges — Fiches de Révision 4ème")
+        display_pdf_if_exists([["grimoire", "4"], ["grimoire", "sortilege"], ["grimoire", "lucas"]], "Le Grimoire des Sortilèges - Lucas 4ème", "grimoire_lucas")
         
-        pages_g_l = [
-            ("Page 1 : 📖 Couverture du Grimoire des 8 Arcanes", """
-                <div class="grimoire-card">
-                    <h2 style="color: #FF9E00 !important; text-align: center;">📜 LE GRIMOIRE DES SORTILÈGES</h2>
-                    <h3 style="color: #00FFCC !important; text-align: center;">Les 8 Arcanes de 4ème (Période 1)</h3>
-                    <p>Ce recueil magique récapitule toutes les leçons et formules pour triompher de la Crypte des Ombres.</p>
-                </div>
-            """),
-            ("Page 2 : 📐 Arcane 1 — Mathématiques", """
-                <div class="grimoire-card">
-                    <h3 style="color: #FF9E00 !important;">📐 ARCANE 1 : MATHEMATIQUES</h3>
-                    <ul>
-                        <li><b>Fractions :</b> $\frac{21}{35} = \frac{3}{5}$. Addition : $\frac{12}{15} + \frac{1}{5} = \frac{15}{15} = 1$.</li>
-                        <li><b>Relatifs :</b> $(-3) \times (-4) = +12$ (produit de 2 négatifs = positif).</li>
-                        <li><b>Vitesse :</b> $v = \frac{d}{t} \Rightarrow 5\text{ km}$ à $20\text{ km/h} = 15\text{ min}$.</li>
-                    </ul>
-                </div>
-            """),
-            ("Page 3 : 📚 Arcane 2 — Français", """
-                <div class="grimoire-card">
-                    <h3 style="color: #FF9E00 !important;">📚 ARCANE 2 : FRANÇAIS</h3>
-                    <ul>
-                        <li><b>Maupassant (<i>La Parure</i>) :</b> Nouvelle réaliste dénonçant la vanité et le désir de paraître.</li>
-                        <li><b>Discours Direct / Indirect :</b> Emploi des guillemets, virgules et transposition des impératifs (« Faites vos exercices » $\rightarrow$ de faire leurs exercices).</li>
-                    </ul>
-                </div>
-            """),
-            ("Page 4 : 🧪 Arcane 3 — Physique-Chimie", """
-                <div class="grimoire-card">
-                    <h3 style="color: #FF9E00 !important;">🧪 ARCANE 3 : PHYSIQUE-CHIMIE</h3>
-                    <ul>
-                        <li><b>Combustion du carbone :</b> $\text{Carbone (C)} + \text{Dioxygène (O}_2\text{)} \rightarrow \text{Dioxyde de carbone (CO}_2\text{)}$.</li>
-                        <li><b>Air :</b> $78\% \text{ Diazote (N}_2\text{)}$ et $21\% \text{ Dioxygène (O}_2\text{)}$.</li>
-                        <li><b>Effet de serre :</b> Le $\text{CO}_2$ est un gaz à effet de serre retenant la chaleur.</li>
-                    </ul>
-                </div>
-            """),
-            ("Page 5 : 🏛️ Arcane 4 — Histoire-Géographie", """
-                <div class="grimoire-card">
-                    <h3 style="color: #FF9E00 !important;">🏛️ ARCANE 4 : HISTOIRE-GÉO & EMC</h3>
-                    <ul>
-                        <li><b>Les Lumières :</b> Mouvement intellectuel du XVIIIe siècle (Voltaire, Rousseau) contre l'absolutisme.</li>
-                        <li><b>Commerce Triangulaire :</b> Grands ports négriers comme Liverpool et Nantes.</li>
-                    </ul>
-                </div>
-            """),
-            ("Page 6 : 🌋 Arcane 5 — SVT & Technologie", """
-                <div class="grimoire-card">
-                    <h3 style="color: #FF9E00 !important;">🌋 ARCANE 5 : SVT & TECHNOLOGIE</h3>
-                    <ul>
-                        <li><b>Séismes :</b> Hypocentre (foyer souterrain) vs Épicentre (surface).</li>
-                        <li><b>Chaîne d'information :</b> Acquérir $\rightarrow$ Traiter $\rightarrow$ Communiquer.</li>
-                        <li><b>Chaîne d'énergie :</b> Alimenter $\rightarrow$ Distribuer $\rightarrow$ Convertir $\rightarrow$ Transmettre.</li>
-                    </ul>
-                </div>
-            """),
-            ("Page 7 : 🌍 Arcane 6 — Langues (Anglais & Espagnol)", """
-                <div class="grimoire-card">
-                    <h3 style="color: #FF9E00 !important;">🌍 ARCANE 6 : LANGUES VIVANTES</h3>
-                    <ul>
-                        <li><b>Anglais :</b> <i>Tidy</i> (ordonné), <i>Whose</i> (possession), <i>You're welcome</i> (De rien).</li>
-                        <li><b>Espagnol :</b> <i>Ser</i> (permanent) vs <i>Estar</i> (localisation/temporaire), diphtongue <i>sentirse $\rightarrow$ se siente</i>.</li>
-                    </ul>
-                </div>
-            """)
-        ]
-        
-        if "p_g_lucas" not in st.session_state:
-            st.session_state.p_g_lucas = 0
-            
-        c1, c2, c3 = st.columns([1, 3, 1])
-        with c1:
-            if st.button("⬅️ Page Précédente", key="btn_prev_g_lucas"):
-                st.session_state.p_g_lucas = max(0, st.session_state.p_g_lucas - 1)
-                safe_rerun()
-        with c2:
-            st.markdown(f"<p style='text-align:center; font-weight:bold; color:#E0AAFF;'>📖 {pages_g_l[st.session_state.p_g_lucas][0]} ({st.session_state.p_g_lucas + 1} / {len(pages_g_l)})</p>", unsafe_allow_html=True)
-        with c3:
-            if st.button("Page Suivante ➡️", key="btn_next_g_lucas"):
-                st.session_state.p_g_lucas = min(len(pages_g_l) - 1, st.session_state.p_g_lucas + 1)
-                safe_rerun()
-                
-        st.markdown(pages_g_l[st.session_state.p_g_lucas][1], unsafe_allow_html=True)
-        display_pdf_download_button([["grimoire", "4"], ["grimoire", "sortileges"], ["grimoire", "lucas"]], "Le Grimoire des Sortilèges - Lucas 4ème")
+        g1, g2, g3, g4, g5, g6 = st.tabs(["📐 Maths", "📚 Français", "🧪 Chimie", "🏛️ Hist-Géo", "🌋 SVT & Techno", "🌍 Langues"])
+        with g1:
+            st.markdown("<div class='grimoire-card'><h4>📐 Mathématiques</h4><ul><li><b>Fractions :</b> 21/35 = 3/5. Addition : 12/15 + 1/5 = 15/15 = 1.</li><li><b>Relatifs :</b> (-3) × (-4) = +12.</li><li><b>Vitesse :</b> v = d/t => 5 km à 20 km/h = 15 min.</li></ul></div>", unsafe_allow_html=True)
+        with g2:
+            st.markdown("<div class='grimoire-card'><h4>📚 Français</h4><ul><li><b>Maupassant (<i>La Parure</i>) :</b> Nouvelle réaliste dénonçant la vanité et le désir de paraître.</li><li><b>Discours Direct / Indirect :</b> Guillemets, virgules et transposition des impératifs.</li></ul></div>", unsafe_allow_html=True)
+        with g3:
+            st.markdown("<div class='grimoire-card'><h4>🧪 Physique-Chimie</h4><ul><li><b>Combustion :</b> C + O2 -> CO2. Le dioxygène est le réactif indispensable.</li><li><b>Air :</b> 78% N2 et 21% O2.</li><li><b>Effet de serre :</b> Le CO2 retient la chaleur dans l'atmosphère.</li></ul></div>", unsafe_allow_html=True)
+        with g4:
+            st.markdown("<div class='grimoire-card'><h4>🏛️ Histoire-Géo</h4><ul><li><b>Lumières :</b> Philosophie du XVIIIe siècle (Voltaire, Rousseau).</li><li><b>Commerce triangulaire :</b> Ports négriers majeurs comme Liverpool et Nantes.</li></ul></div>", unsafe_allow_html=True)
+        with g5:
+            st.markdown("<div class='grimoire-card'><h4>🌋 SVT & Techno</h4><ul><li><b>Séismes :</b> Hypocentre (foyer) vs Épicentre (surface).</li><li><b>Chaîne d'information :</b> Acquérir -> Traiter -> Communiquer.</li><li><b>Chaîne d'énergie :</b> Alimenter -> Distribuer -> Convertir -> Transmettre.</li></ul></div>", unsafe_allow_html=True)
+        with g6:
+            st.markdown("<div class='grimoire-card'><h4>🌍 Langues</h4><ul><li><b>Anglais :</b> Tidy (ordonné), Whose (possession), You're welcome.</li><li><b>Espagnol :</b> Ser (permanent) vs Estar (temporaire/localisation), diphtongue sentirse -> se siente.</li></ul></div>", unsafe_allow_html=True)
