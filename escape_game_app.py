@@ -3,13 +3,7 @@ import os
 import random
 import hashlib
 import base64
-
-# Attempt to import pdf2image for native image rendering of PDFs
-try:
-    from pdf2image import convert_from_path
-    HAS_PDF2IMAGE = True
-except ImportError:
-    HAS_PDF2IMAGE = False
+import unicodedata
 
 # --- CONFIGURATION DE LA PAGE ---
 st.set_page_config(
@@ -19,13 +13,19 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- STYLES CSS PERSONNALISÉS (DÉCORS HALLOWEEN, BOUTONS NOIRS, SELECTBOX LISIBLE, GRAND TITRE) ---
+# --- FONCTION DE NORMALISATION DE TEXTE (SANS ACCENTS, LOWERCASE) ---
+def norm_text(text):
+    if not text:
+        return ""
+    return ''.join(c for c in unicodedata.normalize('NFD', str(text).lower()) if unicodedata.category(c) != 'Mn')
+
+# --- STYLES CSS PERSONNALISÉS (BOUTONS & SELECT EN NOIR, TEXTE DES CARTES EN BLANC) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400&display=swap');
 
     /* Typographie globale */
-    html, body, p, label, input, textarea {
+    html, body, [class*="css"], div, span, p, label, input, textarea {
         font-family: 'Andika', sans-serif !important;
         font-size: 16px !important;
         line-height: 1.6 !important;
@@ -36,18 +36,18 @@ st.markdown("""
     .stApp {
         background-color: #120722 !important;
         background-image: 
-            radial-gradient(circle at 15% 15%, rgba(157, 78, 221, 0.4) 0%, transparent 45%),
-            radial-gradient(circle at 85% 85%, rgba(255, 158, 0, 0.3) 0%, transparent 45%),
-            radial-gradient(circle at 50% 50%, rgba(35, 14, 60, 0.8) 0%, transparent 70%) !important;
+            radial-gradient(circle at 20% 20%, rgba(123, 44, 191, 0.4) 0%, transparent 40%),
+            radial-gradient(circle at 80% 80%, rgba(255, 158, 0, 0.3) 0%, transparent 40%),
+            radial-gradient(circle at 50% 50%, rgba(42, 17, 69, 0.8) 0%, transparent 70%) !important;
         background-attachment: fixed !important;
     }
 
-    /* Titre Principal IMPOSANT, GRAND & LUMINEUX */
+    /* Titre Principal IMPOSANT & LUMINEUX */
     .stApp h1, h1, .main h1 {
         font-size: 2.3rem !important;
         font-weight: 900 !important;
         color: #FF9E00 !important;
-        text-shadow: 0 0 15px rgba(255, 158, 0, 0.8), 3px 3px 6px #000000 !important;
+        text-shadow: 0 0 15px rgba(255, 158, 0, 0.8), 2px 2px 5px #000000 !important;
         margin-bottom: 5px !important;
         text-align: center !important;
     }
@@ -57,61 +57,93 @@ st.markdown("""
         font-weight: 700 !important;
     }
 
-    /* STYLISATION DES BOUTONS CLIQUABLES (TEXTE NOIR LISIBLE) */
-    .stButton > button, .stDownloadButton > button {
-        color: #000000 !important;
-        font-weight: 800 !important;
-        font-size: 1.05rem !important;
-        background: linear-gradient(90deg, #FF9E00 0%, #FFD000 100%) !important;
+    /* FORÇAGE DU TEXTE NOIR SUR TOUS LES BOUTONS (Demande utilisateur) */
+    .stButton > button, 
+    .stDownloadButton > button, 
+    .stFormSubmitButton > button, 
+    button {
+        background: linear-gradient(90deg, #FF9E00 0%, #FFB700 100%) !important;
         border: 2px solid #FFFFFF !important;
-        border-radius: 10px !important;
-        padding: 10px 20px !important;
+        border-radius: 12px !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+        padding: 10px 20px !important;
         width: 100% !important;
     }
-    .stButton > button:hover, .stDownloadButton > button:hover {
+    
+    .stButton > button *, 
+    .stDownloadButton > button *, 
+    .stFormSubmitButton > button *, 
+    button * {
         color: #000000 !important;
-        background: linear-gradient(90deg, #00FFCC 0%, #80FFEA 100%) !important;
-        border-color: #FF9E00 !important;
-        transform: scale(1.02) !important;
-    }
-
-    /* STYLISATION DES LISTES DÉROULANTES / SELECTBOX (FOND SOMBRE & TEXTE BLANC NET) */
-    div[data-baseweb="select"] {
-        background-color: #2D1442 !important;
-        border: 3px solid #C77DFF !important;
-        border-radius: 10px !important;
-    }
-    div[data-baseweb="select"] * {
-        color: #FFFFFF !important;
         font-weight: 800 !important;
         font-size: 1.05rem !important;
     }
-    div[data-baseweb="popover"], ul[role="listbox"], li[role="option"] {
-        background-color: #2D1442 !important;
-        color: #FFFFFF !important;
+
+    .stButton > button:hover, 
+    .stDownloadButton > button:hover, 
+    .stFormSubmitButton > button:hover, 
+    button:hover {
+        background: linear-gradient(90deg, #00FFCC 0%, #80FFEA 100%) !important;
+        border-color: #FF9E00 !important;
     }
-    li[role="option"]:hover, li[data-highlighted="true"] {
+    
+    .stButton > button:hover *, 
+    .stDownloadButton > button:hover *, 
+    .stFormSubmitButton > button:hover *, 
+    button:hover * {
+        color: #000000 !important;
+    }
+
+    /* FORÇAGE DU TEXTE NOIR ET CARTOUCHE ORANGÉE POUR LA LISTE DÉROULANTE / SELECTBOX */
+    div[data-baseweb="select"] > div, .stSelectbox > div > div {
+        background-color: #FF9E00 !important;
+        border: 3px solid #FFFFFF !important;
+        border-radius: 10px !important;
+    }
+    
+    div[data-baseweb="select"] *, 
+    .stSelectbox * {
+        color: #000000 !important;
+        font-weight: 800 !important;
+        font-size: 1.1rem !important;
+    }
+
+    div[data-baseweb="popover"] *, 
+    div[data-baseweb="menu"] *, 
+    ul[role="listbox"] *, 
+    li[role="option"] * {
+        background-color: #FFF3E0 !important;
+        color: #000000 !important;
+        font-weight: 700 !important;
+    }
+
+    li[role="option"]:hover * {
         background-color: #FF9E00 !important;
         color: #000000 !important;
     }
-    li[role="option"]:hover *, li[data-highlighted="true"] * {
-        color: #000000 !important;
+
+    /* TEXTE BLANC RESTAURÉ DANS LES CARTES ET CONTENUS DE COURS (Demande utilisateur) */
+    .journal-card, .journal-card *, 
+    .grimoire-card, .grimoire-card *, 
+    .warning-box, .warning-box *, 
+    .code-box-success, .code-box-success *, 
+    .correct-card, .correct-card *, 
+    .wrong-card, .wrong-card * {
+        color: #FFFFFF !important;
     }
 
-    /* Cartes & Panneaux d'Halloween Décorés */
     .journal-card, .grimoire-card {
-        background-color: rgba(45, 20, 66, 0.95) !important;
+        background-color: rgba(61, 32, 89, 0.95) !important;
         border: 2px solid #C77DFF !important;
         border-radius: 14px !important;
         padding: 22px !important;
         margin-bottom: 20px !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
     }
 
     /* Cartes Avatars Ludiques */
     .avatar-card {
-        background: linear-gradient(145deg, #3D1B59 0%, #250E3A 100%) !important;
+        background: linear-gradient(145deg, #4A246B 0%, #361852 100%) !important;
         border: 3px solid #E0AAFF !important;
         border-radius: 18px !important;
         padding: 20px !important;
@@ -134,7 +166,6 @@ st.markdown("""
         border-radius: 16px !important;
         padding: 25px !important;
         text-align: center !important;
-        color: #FFFFFF !important;
         box-shadow: 0 0 25px rgba(0, 255, 204, 0.4) !important;
     }
 
@@ -143,7 +174,6 @@ st.markdown("""
         border: 3px solid #FF3366 !important;
         border-radius: 14px !important;
         padding: 20px !important;
-        color: #FFFFFF !important;
     }
 
     .correct-card {
@@ -164,7 +194,7 @@ st.markdown("""
 
     /* Stylisation des boutons radio de quiz */
     div[role="radiogroup"] label {
-        background-color: #250E3A !important;
+        background-color: #2D1442 !important;
         padding: 12px 16px !important;
         border-radius: 10px !important;
         border: 2px solid #7B2CBF !important;
@@ -178,7 +208,7 @@ st.markdown("""
 
     /* Amélioration des onglets */
     .stTabs [data-baseweb="tab-list"] {
-        background-color: #250E3A !important;
+        background-color: #2D1442 !important;
         border-radius: 12px !important;
         padding: 6px !important;
     }
@@ -194,141 +224,76 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- FONCTION DE REFORME COMPATIBLE ST.RERUN ---
+# --- FONCTION DE RERUN COMPATIBLE ---
 def safe_rerun():
     if hasattr(st, "rerun"):
         st.rerun()
     elif hasattr(st, "experimental_rerun"):
         st.experimental_rerun()
 
-# --- RECHERCHE INTELLIGENTE ET ROBUSTE DE MÉDIAS ---
-def find_media_file(keywords, extension=".mp4"):
+# --- RECHERCHE ET AFFICHAGE DES MÉDIAS (SANS PROBLEME D'ACCENTS) ---
+def find_media_file_multi(keyword_groups, extension=".mp4"):
     try:
         files = os.listdir(".")
         for f in files:
-            if f.lower().endswith(extension.lower()):
-                # Stripping extension before searching keywords avoids matching '.mp4' as '4'
-                base_name = os.path.splitext(f)[0].lower()
-                if all(kw.lower() in base_name for kw in keywords):
-                    return f
+            f_base, ext = os.path.splitext(f)
+            if ext.lower() == extension.lower():
+                f_norm = norm_text(f_base)
+                for group in keyword_groups:
+                    if all(norm_text(kw) in f_norm for kw in group):
+                        return f
     except Exception:
         pass
     return None
 
-def find_video_for_day(day_num, hero_key):
-    try:
-        files = os.listdir(".")
-        mp4_files = [f for f in files if f.lower().endswith(".mp4")]
-        
-        # Build priority search terms
-        day_str = f"jour {day_num}"
-        hero_tag = "6" if hero_key == "lea" else "4"
-        
-        # 1. Strict match
-        for f in mp4_files:
-            base = os.path.splitext(f)[0].lower()
-            if day_str in base and hero_tag in base:
-                return f
-                
-        # 2. Relaxed match
-        for f in mp4_files:
-            base = os.path.splitext(f)[0].lower()
-            if f"jour_{day_num}" in base or f"j{day_num}" in base or f"jour {day_num}" in base:
-                if hero_key == "lea" and ("6" in base or "lea" in base or "léa" in base or "citrouille" in base):
-                    return f
-                elif hero_key == "lucas" and ("4" in base or "lucas" in base or "crypte" in base or "ombil" in base):
-                    return f
-                    
-        # 3. Fallback: match day alone
-        for f in mp4_files:
-            base = os.path.splitext(f)[0].lower()
-            if day_str in base or f"jour_{day_num}" in base:
-                return f
-    except Exception:
-        pass
-    return None
-
-def find_pdf_file(doc_type, hero_key):
-    try:
-        files = os.listdir(".")
-        pdf_files = [f for f in files if f.lower().endswith(".pdf")]
-        
-        tag = "journal" if doc_type == "journal" else "grimoire"
-        hero_tag = "6" if hero_key == "lea" else "4"
-        hero_name = "léa" if hero_key == "lea" else "lucas"
-        
-        for f in pdf_files:
-            base = os.path.splitext(f)[0].lower()
-            if tag in base and (hero_tag in base or hero_name in base or "lea" in base):
-                return f
-                
-        for f in pdf_files:
-            base = os.path.splitext(f)[0].lower()
-            if tag in base:
-                return f
-    except Exception:
-        pass
-    return None
-
-def display_video_if_exists(day_num, hero_key, fallback_title):
-    video_file = find_video_for_day(day_num, hero_key)
+def display_video_if_exists(keyword_groups, fallback_title):
+    video_file = find_media_file_multi(keyword_groups, ".mp4")
     if video_file:
         st.video(video_file)
     else:
-        st.info(f"🎬 **Cinéma d'Halloween :** La vidéo *'{fallback_title}'* est prête. *(Déposez le fichier .mp4 correspondant sur GitHub pour le lancement direct !)*")
+        st.info(f"🎬 **Cinéma d'Halloween :** La vidéo *'{fallback_title}'* est prête. *(Déposez le fichier .mp4 sur GitHub pour le lancement direct !)*")
 
-def display_pdf_if_exists(doc_type, hero_key, title):
-    pdf_file = find_pdf_file(doc_type, hero_key)
+def get_pdf_images(file_path):
+    images = []
+    # Methode 1 : pypdfium2 (Tres rapide, zero dependance C externe)
+    try:
+        import pypdfium2 as pdfium
+        pdf = pdfium.PdfDocument(file_path)
+        for page in pdf:
+            pil_img = page.render(scale=1.5).to_pil()
+            images.append(pil_img)
+        if images:
+            return images
+    except Exception:
+        pass
+
+    # Methode 2 : pdf2image
+    try:
+        from pdf2image import convert_from_path
+        images = convert_from_path(file_path)
+        if images:
+            return images
+    except Exception:
+        pass
+
+    return images
+
+def display_pdf_if_exists(keyword_groups, title):
+    pdf_file = find_media_file_multi(keyword_groups, ".pdf")
     if pdf_file:
-        st.success(f"📜 **{title}** (*Fichier disponible sur GitHub : {pdf_file}*)")
+        st.success(f"📜 **{title}** (*Fichier trouvé : {pdf_file}*)")
         
-        # Interactive PDF Page Viewer using pdf2image if available
-        if HAS_PDF2IMAGE:
-            cache_key = f"pdf_imgs_{pdf_file}"
-            if cache_key not in st.session_state:
-                try:
-                    imgs = convert_from_path(pdf_file)
-                    st.session_state[cache_key] = imgs
-                except Exception:
-                    st.session_state[cache_key] = None
-                    
-            imgs = st.session_state.get(cache_key)
-            if imgs:
-                total_pages = len(imgs)
-                st.markdown(f"#### 📖 Lecture directe & feuilletable ({total_pages} pages)")
-                
-                page_key = f"page_idx_{pdf_file}"
-                if page_key not in st.session_state:
-                    st.session_state[page_key] = 0
-                    
-                curr_idx = st.session_state[page_key]
-                
-                col_nav1, col_nav2, col_nav3 = st.columns([1, 2, 1])
-                with col_nav1:
-                    if st.button("⬅️ Page Précédente", key=f"prev_{pdf_file}"):
-                        if curr_idx > 0:
-                            st.session_state[page_key] -= 1
-                            safe_rerun()
-                with col_nav2:
-                    sel = st.slider("Feuilleter la page :", 1, total_pages, curr_idx + 1, key=f"slide_{pdf_file}")
-                    if sel - 1 != curr_idx:
-                        st.session_state[page_key] = sel - 1
-                        safe_rerun()
-                with col_nav3:
-                    if st.button("Page Suivante ➡️", key=f"next_{pdf_file}"):
-                        if curr_idx < total_pages - 1:
-                            st.session_state[page_key] += 1
-                            safe_rerun()
-                            
-                curr_idx = st.session_state[page_key]
-                st.image(imgs[curr_idx], caption=f"Page {curr_idx + 1} / {total_pages}", use_container_width=True)
-                
-                with st.expander("👁️ Afficher toutes les pages en continu"):
-                    for idx, img in enumerate(imgs):
-                        st.image(img, caption=f"Page {idx + 1} / {total_pages}", use_container_width=True)
-                        
+        # Conversion des pages en images pour affichage universel
+        imgs = get_pdf_images(pdf_file)
+        if imgs:
+            st.markdown(f"**📖 Feuilletez le document ci-dessous ({len(imgs)} page(s)) :**")
+            for idx, img in enumerate(imgs):
+                st.image(img, caption=f"Page {idx + 1} sur {len(imgs)}", use_container_width=True)
+        else:
+            st.info("📄 Le document PDF est disponible ci-dessous :")
+
         with open(pdf_file, "rb") as f:
-            st.download_button(f"📥 Télécharger {title} (Fichier PDF)", f, file_name=pdf_file, mime="application/pdf", key=f"dl_{pdf_file}")
+            st.download_button(f"📥 Télécharger {title} (Fichier PDF)", f, file_name=pdf_file, mime="application/pdf", key=f"dl_{hashlib.md5(pdf_file.encode()).hexdigest()}")
     else:
         st.info(f"📖 **{title}** *(Déposez le fichier PDF sur GitHub pour la lecture directe en grand sur la page !)*")
     return pdf_file
@@ -357,9 +322,9 @@ CODES_LUCAS = {
     5: "PORTAIL-SCIENCE-4E"
 }
 
-# --- EN-TÊTE PRINCIPAL ET SOUS-TITRE ---
-st.markdown('<h1>🎃 L\'Académie d\'Halloween : Portails d\'Évasion</h1>', unsafe_allow_html=True)
-st.markdown('<p style="font-size: 1.15rem; color: #E0AAFF; text-align: center; font-weight: bold; margin-bottom: 25px;">🕸️ Traversez les salles hantées, résolvez les énigmes de cours et débloquez les Mots-Pouvoirs ! 🕯️</p>', unsafe_allow_html=True)
+# --- EN-TÊTE PRINCIPAL & BANNIÈRE HALLOWEEN ---
+st.markdown("""<h1 style="font-size: 2.3rem !important; color: #FF9E00 !important; text-align: center;">🎃 L'Académie d'Halloween : Portails d'Évasion</h1>""", unsafe_allow_html=True)
+st.markdown("""<p style="font-size: 1.1rem !important; color: #E0AAFF !important; text-align: center; font-weight: bold; margin-bottom: 20px;">🕸️ Traversez les salles hantées, résolvez les énigmes de cours et débloquez les Mots-Pouvoirs ! 🕯️</p>""", unsafe_allow_html=True)
 
 # Sélection ludique des Avatars
 col_avatar1, col_avatar2 = st.columns(2)
@@ -420,15 +385,15 @@ if st.session_state.selected_hero == "lea":
         st.markdown("""
             <div class="journal-card">
                 <h3 style="color: #FF9E00 !important;">🏰 Bienvenue dans ton Journal de la Quête, Léa !</h3>
-                <p>Ce carnet magique contient ta feuille de route pour libérer la <b>Citrouille d'Émeraude</b> de la malédiction du Manoir des Sorciers.</p>
-                <ul>
-                    <li><b>Objectif :</b> Parcourir les 5 Salles Hantées en obtenant <b>20/20 à chaque épreuve</b>.</li>
-                    <li><b>Mots-Pouvoirs :</b> Chaque sans-faute te délivre un <b>Mot-Pouvoir</b> à inscrire dans ton Journal.</li>
+                <p style="color: #FFFFFF !important;">Ce carnet magique contient ta feuille de route pour libérer la <b>Citrouille d'Émeraude</b> de la malédiction du Manoir des Sorciers.</p>
+                <ul style="color: #FFFFFF !important;">
+                    <li style="color: #FFFFFF !important;"><b>Objectif :</b> Parcourir les 5 Salles Hantées en obtenant <b>20/20 à chaque épreuve</b>.</li>
+                    <li style="color: #FFFFFF !important;"><b>Mots-Pouvoirs :</b> Chaque sans-faute te délivre un <b>Mot-Pouvoir</b> à inscrire dans ton Journal.</li>
                 </ul>
             </div>
         """, unsafe_allow_html=True)
         
-        display_pdf_if_exists("journal", "lea", "Le Journal de la Quête - Léa 6ème")
+        display_pdf_if_exists([["journal", "6"], ["journal", "citrouille"], ["journal", "lea"]], "Le Journal de la Quête - Léa 6ème")
         
         st.subheader("🗺️ Carte du Manoir & Mots-Pouvoirs Débloqués")
         col_j1, col_j2, col_j3 = st.columns(3)
@@ -496,7 +461,7 @@ if st.session_state.selected_hero == "lea":
             st.markdown(f"### 📍 {salles_lea[j_sel]}")
             
             if j_sel == 6:
-                display_video_if_exists(6, "lea", "Épilogue : La Victoire Finale")
+                display_video_if_exists([["epilogue", "6"], ["victoire", "6"], ["bal", "6"]], "Épilogue : La Victoire Finale")
                 st.markdown("""
                     <div class="code-box-success">
                         🎉 <b>VICTOIRE FINALE !</b><br>
@@ -504,7 +469,7 @@ if st.session_state.selected_hero == "lea":
                     </div>
                 """, unsafe_allow_html=True)
             else:
-                display_video_if_exists(j_sel, "lea", f"Teaser Vidéo - Jour {j_sel}")
+                display_video_if_exists([["jour 1", "6"], ["galerie", "6"], ["jour 1"], ["jour 2", "6"], ["jour 3", "6"], ["jour 4", "6"], ["jour 5", "6"]], f"Teaser Vidéo - Jour {j_sel}")
                 
                 st.subheader("🧪 Épreuve du Jour : Les 20 Questions de Cours Scénarisées du Studio")
                 st.caption("Sélectionnez la bonne réponse parmi les 4 propositions mélangées pour chaque question.")
@@ -596,7 +561,7 @@ if st.session_state.selected_hero == "lea":
     # --- TAB 3 : LE GRIMOIRE DU SAVOIR ---
     with tab_grimoire:
         st.subheader("📚 Le Grimoire du Savoir — Fiches de Révision 6ème")
-        display_pdf_if_exists("grimoire", "lea", "Le Grimoire du Savoir - Léa 6ème")
+        display_pdf_if_exists([["grimoire", "6"], ["grimoire", "savoir"], ["grimoire", "lea"]], "Le Grimoire du Savoir - Léa 6ème")
         
         g1, g2, g3, g4, g5 = st.tabs(["📐 Maths", "📚 Français", "🔬 Sciences", "🏛️ Hist-Géo", "🇬🇧 Anglais"])
         with g1:
@@ -628,15 +593,15 @@ else:
         st.markdown("""
             <div class="journal-card">
                 <h3 style="color: #FF9E00 !important;">🦇 Bienvenue dans ton Journal de la Quête, Lucas !</h3>
-                <p>Ce carnet d'alchimie contient la carte de la <b>Crypte des Ombres</b> pour refermer le Portail du Cauchemar.</p>
-                <ul>
-                    <li><b>Objectif :</b> Traverser les 5 Salles de la Crypte en obtenant <b>20/20 à chaque épreuve</b>.</li>
-                    <li><b>Codes Secrets :</b> Un sans-faute parfait te délivre le <b>Code Secret</b> requis pour la salle suivante.</li>
+                <p style="color: #FFFFFF !important;">Ce carnet d'alchimie contient la carte de la <b>Crypte des Ombres</b> pour refermer le Portail du Cauchemar.</p>
+                <ul style="color: #FFFFFF !important;">
+                    <li style="color: #FFFFFF !important;"><b>Objectif :</b> Traverser les 5 Salles de la Crypte en obtenant <b>20/20 à chaque épreuve</b>.</li>
+                    <li style="color: #FFFFFF !important;"><b>Codes Secrets :</b> Un sans-faute parfait te délivre le <b>Code Secret</b> requis pour la salle suivante.</li>
                 </ul>
             </div>
         """, unsafe_allow_html=True)
         
-        display_pdf_if_exists("journal", "lucas", "Le Journal de la Quête - Lucas 4ème")
+        display_pdf_if_exists([["journal", "4"], ["journal", "crypte"], ["journal", "lucas"]], "Le Journal de la Quête - Lucas 4ème")
         
         st.subheader("🗺️ Carte de la Crypte & Codes Secrets Débloqués")
         col_l1, col_l2, col_l3 = st.columns(3)
@@ -704,7 +669,7 @@ else:
             st.markdown(f"### 📍 {salles_lucas[j_sel]}")
             
             if j_sel == 6:
-                display_video_if_exists(6, "lucas", "Épilogue : La Victoire sur la Crypte")
+                display_video_if_exists([["epilogue", "4"], ["victoire", "4"]], "Épilogue : La Victoire sur la Crypte")
                 st.markdown("""
                     <div class="code-box-success">
                         🎉 <b>TRIOMPHE ÉPIQUE !</b><br>
@@ -712,7 +677,7 @@ else:
                     </div>
                 """, unsafe_allow_html=True)
             else:
-                display_video_if_exists(j_sel, "lucas", f"Teaser Vidéo - Jour {j_sel}")
+                display_video_if_exists([["jour 1", "4"], ["laboratoire"], ["jour 2", "4"], ["jour 3", "4"], ["jour 4", "4"], ["jour 5", "4"]], f"Teaser Vidéo - Jour {j_sel}")
                 
                 st.subheader("🧪 Épreuve du Jour : Les 20 Questions Multi-Matières Scénarisées du Studio")
                 st.caption("Sélectionnez la bonne réponse parmi les 4 propositions mélangées pour chaque question.")
@@ -803,7 +768,7 @@ else:
     # --- TAB 3 : LE GRIMOIRE DES SORTILÈGES ---
     with tab_grimoire_l:
         st.subheader("📖 Le Grimoire des Sortilèges — Fiches de Révision 4ème")
-        display_pdf_if_exists("grimoire", "lucas", "Le Grimoire des Sortilèges - Lucas 4ème")
+        display_pdf_if_exists([["grimoire", "4"], ["grimoire", "sortilege"], ["grimoire", "lucas"]], "Le Grimoire des Sortilèges - Lucas 4ème")
         
         g1, g2, g3, g4, g5, g6 = st.tabs(["📐 Maths", "📚 Français", "🧪 Chimie", "🏛️ Hist-Géo", "🌋 SVT & Techno", "🌍 Langues"])
         with g1:
