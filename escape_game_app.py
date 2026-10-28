@@ -19,7 +19,7 @@ def norm_text(text):
         return ""
     return ''.join(c for c in unicodedata.normalize('NFD', str(text).lower()) if unicodedata.category(c) != 'Mn')
 
-# --- STYLES CSS PERSONNALISÉS (PENSÉS POUR UNE LISIBILITÉ PARFAITE) ---
+# --- STYLES CSS PERSONNALISÉS (LUMINEUX, HALLOWEEN, DROPDOWN CORRIGÉ) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400&display=swap');
@@ -42,7 +42,35 @@ st.markdown("""
         background-attachment: fixed !important;
     }
 
-    /* FORÇAGE ABSOLU DU TEXTE NOIR SUR TOUS LES BOUTONS CLIQUABLES */
+    /* Titres Personnalisés IMPOSANTS & LUMINEUX */
+    .hero-title {
+        font-size: 3rem !important;
+        font-weight: 900 !important;
+        color: #FF9E00 !important;
+        text-shadow: 0 0 25px rgba(255, 158, 0, 0.9), 3px 3px 6px #000000 !important;
+        text-align: center !important;
+        margin-bottom: 8px !important;
+    }
+
+    .hero-subtitle {
+        font-size: 1.35rem !important;
+        color: #E0AAFF !important;
+        text-align: center !important;
+        font-weight: bold !important;
+        margin-bottom: 25px !important;
+        text-shadow: 1px 1px 3px #000000 !important;
+    }
+
+    .section-title {
+        font-size: 2.1rem !important;
+        font-weight: 800 !important;
+        color: #FF9E00 !important;
+        margin-top: 15px !important;
+        margin-bottom: 15px !important;
+        text-shadow: 2px 2px 4px #000000 !important;
+    }
+
+    /* FORÇAGE DU TEXTE NOIR SUR TOUS LES BOUTONS CLIQUABLES */
     .stButton > button, 
     .stDownloadButton > button, 
     .stFormSubmitButton > button, 
@@ -79,31 +107,33 @@ st.markdown("""
         color: #000000 !important;
     }
 
-    /* LISTE DÉROULANTE (SELECTBOX) : LIBELLÉ VIOLET CLAIR BRILLANT (1.35REM / 22PX) */
+    /* LISTE DÉROULANTE (SELECTBOX) - STYLE LIBELLÉ, CHAMP & DROPDOWN LISIBLES À 100% */
+    div[data-testid="stWidgetLabel"] *, 
     .stSelectbox label, 
-    div[data-testid="stWidgetLabel"] p,
-    div[data-testid="stWidgetLabel"] span {
+    .stSelectbox label * {
         color: #E0AAFF !important;
-        font-size: 1.35rem !important;
-        font-weight: 900 !important;
+        font-size: 1.3rem !important;
+        font-weight: 800 !important;
         text-shadow: 1px 1px 3px #000000 !important;
     }
 
-    /* BOÎTE DU MENU SELECTBOX QUAND ELLE EST FERMÉE : FOND ORANGE ET TEXTE NOIR */
-    div[data-baseweb="select"] > div, .stSelectbox > div > div {
+    div[data-baseweb="select"] > div, 
+    .stSelectbox > div > div {
         background-color: #FF9E00 !important;
         border: 3px solid #FFFFFF !important;
         border-radius: 10px !important;
     }
     
     div[data-baseweb="select"] *, 
-    .stSelectbox * {
+    .stSelectbox *,
+    .stSelectbox div,
+    .stSelectbox span {
         color: #000000 !important;
         font-weight: 900 !important;
         font-size: 1.15rem !important;
     }
 
-    /* MENU DÉROULANT QUI S'OUVRE AU CLIC (POPOVER BASEWEB) - FOND SOMBRE ET TEXTE BLANC NET */
+    /* MENU POPUP QUI S'OUVRE AU CLIC (BASEWEB POPOVER) */
     div[data-baseweb="popover"],
     div[data-baseweb="popover"] *,
     div[data-baseweb="menu"],
@@ -111,23 +141,26 @@ st.markdown("""
     ul[role="listbox"],
     ul[role="listbox"] *,
     li[role="option"],
-    li[role="option"] * {
-        background-color: #231038 !important;
+    li[role="option"] *,
+    [role="option"] span,
+    [role="option"] div {
+        background-color: #2D1442 !important;
         color: #FFFFFF !important;
         font-weight: 800 !important;
         font-size: 1.1rem !important;
     }
 
-    /* SURVOL DANS LA LISTE DÉROULANTE : PASSAGE EN FOND ORANGE ET TEXTE NOIR */
-    div[data-baseweb="popover"] li[role="option"]:hover,
-    div[data-baseweb="popover"] li[role="option"]:hover *,
-    div[data-baseweb="popover"] li[data-highlighted="true"],
-    div[data-baseweb="popover"] li[data-highlighted="true"] * {
+    li[role="option"]:hover,
+    li[role="option"]:hover *,
+    li[data-highlighted="true"],
+    li[data-highlighted="true"] *,
+    li[aria-selected="true"],
+    li[aria-selected="true"] * {
         background-color: #FF9E00 !important;
         color: #000000 !important;
     }
 
-    /* TEXTE BLANC RESTAURÉ DANS TOUTES LES CARTES ET NOTIONS */
+    /* TEXTE BLANC DANS LES CARTES */
     .journal-card, .journal-card *, 
     .grimoire-card, .grimoire-card *, 
     .warning-box, .warning-box *, 
@@ -237,7 +270,7 @@ def safe_rerun():
     elif hasattr(st, "experimental_rerun"):
         st.experimental_rerun()
 
-# --- RECHERCHE ET AFFICHAGE DES MÉDIAS (SANS RAME NI BLOCAGE DU SERVEUR) ---
+# --- RECHERCHE ET AFFICHAGE DES MÉDIAS (VIDÉOS & PDF FLUIDES) ---
 def find_media_file_multi(keyword_groups, extension=".mp4"):
     try:
         files = os.listdir(".")
@@ -259,15 +292,10 @@ def display_video_if_exists(keyword_groups, fallback_title):
     else:
         st.info(f"🎬 **Cinéma d'Halloween :** La vidéo *'{fallback_title}'* est prête. *(Déposez le fichier .mp4 sur GitHub pour le lancement direct !)*")
 
-def display_pdf_download_button(keyword_groups, title):
+def display_pdf_if_exists(keyword_groups, title):
     pdf_file = find_media_file_multi(keyword_groups, ".pdf")
     if pdf_file:
-        st.markdown(f"""
-            <div style="background-color: #2D1442; border: 2px solid #00FFCC; border-radius: 12px; padding: 18px; margin-bottom: 20px; text-align: center;">
-                <p style="color: #00FFCC !important; font-weight: bold; font-size: 1.2rem; margin-bottom: 8px;">📜 Document Officiel Détecté : {pdf_file}</p>
-                <p style="color: #FFFFFF !important; margin-bottom: 15px;">Vous pouvez télécharger le fichier PDF complet avec toutes ses illustrations et sa mise en page d'origine ci-dessous :</p>
-            </div>
-        """, unsafe_allow_html=True)
+        st.success(f"📜 **Document Officiel Détecté :** `{pdf_file}`")
         try:
             with open(pdf_file, "rb") as f:
                 st.download_button(
@@ -278,17 +306,18 @@ def display_pdf_download_button(keyword_groups, title):
                     key=f"dl_{hashlib.md5(pdf_file.encode()).hexdigest()}"
                 )
         except Exception:
-            pass
+            st.error(f"Impossible de lire le fichier `{pdf_file}`.")
     else:
-        st.info(f"📖 **{title}** *(Déposez le fichier PDF sur GitHub pour l'activer !)*")
+        st.info(f"📖 **{title}** *(Déposez le fichier PDF sur GitHub pour l'ouvrir directement !)*")
+    return pdf_file
 
 # --- INITIALISATION SESSION ---
 if "selected_hero" not in st.session_state:
     st.session_state.selected_hero = "lea"
 if "unlocked_lea" not in st.session_state:
-    st.session_state.unlocked_lea = {0, 1}
+    st.session_state.unlocked_lea = {1}
 if "unlocked_lucas" not in st.session_state:
-    st.session_state.unlocked_lucas = {0, 1}
+    st.session_state.unlocked_lucas = {1}
 
 CODES_LEA = {
     1: "GALERIE-CONTE-6E",
@@ -307,8 +336,8 @@ CODES_LUCAS = {
 }
 
 # --- EN-TÊTE PRINCIPAL GRAND FORMAT & BANNIÈRE HALLOWEEN ---
-st.markdown("""<h1 style="font-size: 3rem !important; color: #FF9E00 !important; text-align: center; font-weight: 900 !important; text-shadow: 0 0 20px rgba(255, 158, 0, 0.8), 3px 3px 6px #000000; margin-bottom: 5px !important;">🎃 L'Académie d'Halloween : Portails d'Évasion</h1>""", unsafe_allow_html=True)
-st.markdown("""<p style="font-size: 1.45rem !important; color: #E0AAFF !important; text-align: center; font-weight: bold !important; margin-bottom: 25px !important; text-shadow: 1px 1px 3px #000000;">🕸️ Traversez les salles hantées, résolvez les énigmes de cours et débloquez les Mots-Pouvoirs ! 🕯️</p>""", unsafe_allow_html=True)
+st.markdown('<div class="hero-title">🎃 L’Académie d’Halloween : Portails d’Évasion</div>', unsafe_allow_html=True)
+st.markdown('<div class="hero-subtitle">🕸️ Traversez les salles hantées, résolvez les énigmes de cours et débloquez les Mots-Pouvoirs ! 🕯️</div>', unsafe_allow_html=True)
 
 # Sélection ludique des Avatars
 col_avatar1, col_avatar2 = st.columns(2)
@@ -318,9 +347,9 @@ with col_avatar1:
     border_style = "avatar-selected" if is_active_lea else ""
     st.markdown(f"""
         <div class="avatar-card {border_style}">
-            <h2 style="color: #FF9E00 !important; margin-bottom: 5px; font-size: 2.1rem !important; font-weight: 900 !important;">🔮 Léa — 6ème</h2>
-            <p style="font-size: 1.3rem !important; color: #00FFCC !important; font-weight: bold;">L'Apprentie Sorcière du Manoir</p>
-            <p style="margin: 10px 0; font-size: 1.15rem !important; color: #FFFFFF !important;">🏰 <b>Quête :</b> La Malédiction de la Citrouille d'Émeraude<br>📚 <b>Matières :</b> Français, Maths, Sciences, Hist-Géo, Anglais</p>
+            <h2 style="color: #FF9E00 !important; margin-bottom: 5px; font-size: 1.85rem !important; font-weight: 800;">🔮 Léa — 6ème</h2>
+            <p style="font-size: 1.25rem !important; color: #00FFCC !important; font-weight: bold;">L'Apprentie Sorcière du Manoir</p>
+            <p style="margin: 10px 0; font-size: 1.1rem !important; color: #FFFFFF !important;">🏰 <b>Quête :</b> La Malédiction de la Citrouille d'Émeraude<br>📚 <b>Matières :</b> Français, Maths, Sciences, Hist-Géo, Anglais</p>
         </div>
     """, unsafe_allow_html=True)
     if st.button("🧙‍♀️ Incarner Léa (6ème)", key="btn_hero_lea"):
@@ -332,9 +361,9 @@ with col_avatar2:
     border_style = "avatar-selected" if is_active_lucas else ""
     st.markdown(f"""
         <div class="avatar-card {border_style}">
-            <h2 style="color: #FF9E00 !important; margin-bottom: 5px; font-size: 2.1rem !important; font-weight: 900 !important;">⚡ Lucas — 4ème</h2>
-            <p style="font-size: 1.3rem !important; color: #00FFCC !important; font-weight: bold;">L'Alchimiste & Chasseur d'Ombres</p>
-            <p style="margin: 10px 0; font-size: 1.15rem !important; color: #FFFFFF !important;">🦇 <b>Quête :</b> Le Mystère de la Crypte des Ombres<br>🔬 <b>Matières :</b> 8 Matières de 4ème (Sciences, Techno, Langues...)</p>
+            <h2 style="color: #FF9E00 !important; margin-bottom: 5px; font-size: 1.85rem !important; font-weight: 800;">⚡ Lucas — 4ème</h2>
+            <p style="font-size: 1.25rem !important; color: #00FFCC !important; font-weight: bold;">L'Alchimiste & Chasseur d'Ombres</p>
+            <p style="margin: 10px 0; font-size: 1.1rem !important; color: #FFFFFF !important;">🦇 <b>Quête :</b> Le Mystère de la Crypte des Ombres<br>🔬 <b>Matières :</b> 8 Matières de 4ème (Sciences, Techno, Langues...)</p>
         </div>
     """, unsafe_allow_html=True)
     if st.button("🧛‍♂️ Incarner Lucas (4ème)", key="btn_hero_lucas"):
@@ -355,7 +384,7 @@ def get_shuffled_options(q_id, correct_ans, wrong_list):
 # SECTION POUR LÉA (6ÈME)
 # ==============================================================================
 if st.session_state.selected_hero == "lea":
-    st.markdown("""<h2 style="font-size: 2.2rem !important; color: #E0AAFF !important;">🔮 Espace Aventure : Léa (6ème)</h2>""", unsafe_allow_html=True)
+    st.markdown('<div class="section-title">🔮 Espace Aventure : Léa (6ème)</div>', unsafe_allow_html=True)
     
     tab_accueil_journal, tab_aventure, tab_grimoire = st.tabs([
         "📖 Mon Journal de la Quête (Page d'Accueil)",
@@ -377,7 +406,7 @@ if st.session_state.selected_hero == "lea":
             </div>
         """, unsafe_allow_html=True)
         
-        display_pdf_download_button([["journal", "citrouille"], ["journal", "lea"], ["journal", "6"]], "Le Journal de la Quête - Léa 6ème")
+        display_pdf_if_exists([["journal", "citrouille"], ["journal", "lea"], ["journal", "6"]], "Le Journal de la Quête - Léa 6ème")
         
         st.subheader("🗺️ Carte du Manoir & Mots-Pouvoirs Débloqués")
         col_j1, col_j2, col_j3 = st.columns(3)
@@ -415,18 +444,30 @@ if st.session_state.selected_hero == "lea":
     # --- TAB 2 : LA QUÊTE & LES SALLES ---
     with tab_aventure:
         salles_lea = {
-            0: "Jour 0 : 🎬 Lancement & Bande-Annonce du Manoir",
-            1: "Jour 1 : 🖼️ La Galerie des Créatures & des Parchemins Hantés",
-            2: "Jour 2 : 🌕 L'Observatoire de la Pleine Lune & des Étoiles",
-            3: "Jour 3 : 🕸️ Le Labyrinthe des Toiles Géométriques & des Chaudrons",
-            4: "Jour 4 : 🏛️ La Crypte des Anciens Rois & des Hiéroglyphes",
-            5: "Jour 5 : 🎃 La Salle de la Citrouille d'Émeraude (Rituel Ultime)",
-            6: "Jour 6 : 🏆 Le Grand Rituel Récapitulatif & Épilogue"
+            0: "Jour 0 : 🎬 Lancement & Bande-Annonce - L'Invitation au Manoir",
+            1: "Jour 1 : La Galerie des Créatures & des Parchemins Hantés",
+            2: "Jour 2 : L'Observatoire de la Pleine Lune & des Étoiles",
+            3: "Jour 3 : Le Labyrinthe des Toiles Géométriques & des Chaudrons",
+            4: "Jour 4 : La Crypte des Anciens Rois & des Hiéroglyphes",
+            5: "Jour 5 : La Salle de la Citrouille d'Émeraude (Rituel Ultime)",
+            6: "Jour 6 : Épilogue & Grand Bal d'Halloween"
         }
         
         j_sel = st.selectbox("📍 Sélectionnez la Salle à Explorer :", list(salles_lea.keys()), format_func=lambda x: salles_lea[x])
         
-        if j_sel not in st.session_state.unlocked_lea and j_sel > 1:
+        if j_sel == 0:
+            st.markdown("### 📍 Jour 0 : Lancement de l'Aventure & Bande-Annonce")
+            display_video_if_exists([["bande-annonce", "6"], ["citrouille", "6"], ["trailer", "6"], ["j0", "6"]], "Bande-Annonce - La Citrouille d'Émeraude")
+            st.markdown("""
+                <div class="journal-card">
+                    <h3 style="color: #FF9E00 !important;">📜 Bienvenue à l'Académie de Sorcellerie d'Halloween !</h3>
+                    <p>Léa, la malédiction s'est abattue sur le Manoir des Sorciers ! La célèbre Citrouille d'Émeraude a été scellée par 5 verrous magiques.</p>
+                    <p><b>Ton plan de vol :</b> Chaque jour de tes vacances, explore une nouvelle salle hantée, réussis le quiz de 20 questions de cours pour obtenir le <b>Mot-Pouvoir secret</b>, et note-le dans ton Journal de la Quête !</p>
+                    <p style="color: #00FFCC !important; font-weight: bold;">Rends-toi dès maintenant dans la Salle du Jour 1 pour débuter la quête !</p>
+                </div>
+            """, unsafe_allow_html=True)
+
+        elif j_sel not in st.session_state.unlocked_lea and j_sel > 1:
             st.markdown(f"""
                 <div class="warning-box">
                     🔒 <b>Salle verrouillée par le Sceau Magique !</b><br>
@@ -445,141 +486,116 @@ if st.session_state.selected_hero == "lea":
         else:
             st.markdown(f"### 📍 {salles_lea[j_sel]}")
             
-            if j_sel == 0:
-                # JOUR 0 : BANDE ANNONCE & LANCEMENT
-                display_video_if_exists([["bande", "annonce"], ["citrouille"], ["6°"], ["6e"]], "Bande-Annonce Général — La Citrouille d'Émeraude")
-                st.markdown("""
-                    <div class="journal-card">
-                        <h3 style="color: #FF9E00 !important;">🎃 Bienvenue à l'Académie d'Halloween, Léa !</h3>
-                        <p>Découvre la bande-annonce ci-dessus pour plonger dans l'histoire de la malédiction du Manoir des Sorciers.</p>
-                        <p><b>Comment jouer :</b></p>
-                        <ol>
-                            <li>Sélectionne <b>Jour 1</b> dans le menu déroulant ci-dessus.</li>
-                            <li>Regarde le teaser vidéo de la salle et réponds aux 20 questions de cours.</li>
-                            <li>En obéissant un 20/20, le Maître Sorcier te révélera le <b>Code Secret</b> du jour à noter dans ton Journal.</li>
-                        </ol>
-                    </div>
-                """, unsafe_allow_html=True)
+            if j_sel == 6:
+                st.subheader("🧪 Épreuve Finale du Jour 6 : Le Quiz Récapitulatif du Grand Bal")
+                st.caption("Validez vos 20 réponses pour déclencher la vidéo d'Épilogue et la Victoire Finale !")
             else:
-                # TEASER VIDÉO DE LA SALLE
-                if j_sel < 6:
-                    display_video_if_exists([["jour 1", "6"], ["galerie", "6"], ["jour 1"], ["jour 2", "6"], ["jour 3", "6"], ["jour 4", "6"], ["jour 5", "6"]], f"Teaser Vidéo - Jour {j_sel}")
-                
-                st.subheader(f"🧪 Épreuve du Jour {j_sel} : Les 20 Questions de Cours Scénarisées du Studio")
+                display_video_if_exists([["jour 1", "6"], ["galerie", "6"], ["jour 1"], ["jour 2", "6"], ["jour 3", "6"], ["jour 4", "6"], ["jour 5", "6"]], f"Teaser Vidéo - Jour {j_sel}")
+                st.subheader("🧪 Épreuve du Jour : Les 20 Questions de Cours Scénarisées du Studio")
                 st.caption("Sélectionnez la bonne réponse parmi les 4 propositions mélangées pour chaque question.")
+            
+            q_raw_lea = {
+                1: [
+                    ("Q1 (Français) : Dans la Galerie, Léa observe une statue hybride. Quel terme désigne une créature composée d'éléments d'espèces différentes ?", "Une créature hybride", ["Une créature réelle", "Un animal domestique", "Une créature fossile"], "Une créature hybride associe des éléments de plusieurs animaux."),
+                    ("Q2 (Maths) : Pour déverrouiller le coffre hanté, Léa classe : 12,4 cm, 12,05 cm et 12,35 cm. Quel est l'ordre croissant correct ?", "12,05 cm < 12,35 cm < 12,4 cm", ["12,4 cm < 12,35 cm < 12,05 cm", "12,35 cm < 12,05 cm < 12,4 cm", "12,05 cm < 12,4 cm < 12,35 cm"], "En comparant les dixièmes et centièmes : 12,05 < 12,35 < 12,40."),
+                    ("Q3 (Anglais) : Pour demander de l'aide poliment à la gargoyle de la galerie, quelle formule Léa utilise-t-elle ?", "Can you help me please?", ["Where is the room?", "Thank you very much", "Nice to meet you"], "La formule de demande polie est 'Can you help me please?'."),
+                    ("Q4 (Sciences) : Pourquoi l'araignée géante de la galerie appartient-elle aux arachnides et non aux insectes ?", "Elle a 8 pattes et pas d'antennes", ["Elle a 6 pattes et des ailes", "Elle a un squelette interne", "Elle a 10 pattes"], "Les arachnides ont 8 pattes (4 paires) et pas d'antennes."),
+                    ("Q5 (Hist-Géo) : Quel nom porte la première écriture née en Mésopotamie vers 3500 av. J.-C. ?", "L'écriture cunéiforme", ["Les hiéroglyphes", "L'alphabet grec", "L'écriture cursive"], "L'écriture cunéiforme en forme de coins est apparue en Mésopotamie."),
+                    ("Q6 (Français) : Quel sentiment désigne une peur extrême face aux monstres de la galerie ?", "L'épouvante", ["La joie", "La sérénité", "L'indifférence"], "L'épouvante est un sentiment de terreur intense face au danger."),
+                    ("Q7 (Maths) : La dalle carrée de la gargouille mesure 1,5 m de côté. Son périmètre est égal à :", "6 m", ["2,25 m", "4,5 m", "3 m"], "Périmètre = 4 × 1,5 m = 6 m."),
+                    ("Q8 (Sciences) : Quelle est la durée du mouvement de révolution de la Terre autour du Soleil ?", "365,25 jours (1 an)", ["24 heures", "12 heures", "28 jours"], "La révolution complète dure 365,25 jours et définit une année."),
+                    ("Q9 (Anglais) : Quelle fourniture scolaire traduit 'a glue stick' ?", "Un bâton de colle", ["Un crayon à papier", "Une règle", "Une trousse"], "'A glue stick' désigne un bâton de colle."),
+                    ("Q10 (Français) : Dans le conte hanté, quel événement vient rompre la vie paisible du royaume ?", "L'élément perturbateur", ["La situation initiale", "Les péripéties", "Le dénouement"], "L'élément perturbateur déclenche les aventures du récit."),
+                    ("Q11 (Maths) : Léa a 20 pièces magiques et achète une potion à 7,80 pièces. Combien lui reste-t-il ?", "12,20 pièces", ["12,80 pièces", "13,20 pièces", "11,80 pièces"], "20 - 7,80 = 12,20."),
+                    ("Q12 (Hist-Géo) : À quelle période les hommes préhistoriques deviennent-ils agriculteurs et sédentaires ?", "Le Néolithique", ["Le Paléolithique", "Le Moyen Âge", "L'Antiquité"], "Le Néolithique marque le passage à la sédentarité et l'agriculture."),
+                    ("Q13 (Sciences) : Quelle caractéristique biologique est partagée par TOUS les êtres vivants ?", "Ils naissent, se nourrissent et se reproduisent", ["Ils ont des plumes", "Ils vivent sous l'eau", "Ils volent dans l'air"], "Tous les êtres vivants naissent, se nourrissent, grandissent et se reproduisent."),
+                    ("Q14 (Français) : Dans 'la gargouille attentive', quelle est la classe grammaticale de 'attentive' ?", "Adjectif qualificatif", ["Nom commun", "Verbe à l'infinitif", "Adverbe"], "'Attentive' qualifie le nom 'gargouille'."),
+                    ("Q15 (Anglais) : Que signifie le verbe anglais 'to spell' ?", "Épeler", ["Écrire", "Dessiner", "Compter"], "'To spell' signifie nommer les lettres d'un mot."),
+                    ("Q16 (Maths) : Un grimoire contient 24 sorts. Combien font les 3/4 de ces sorts ?", "18 sorts", ["12 sorts", "20 sorts", "16 sorts"], "(24 ÷ 4) × 3 = 18."),
+                    ("Q17 (Hist-Géo/EMC) : Quel est l'objectif majeur des règles de vie collective au collège ?", "Garantir le vivre-ensemble et le respect", ["Punir les élèves", "Donner des devoirs", "Sélectionner les délégués"], "L'EMC enseigne le vivre-ensemble et le respect de chacun."),
+                    ("Q18 (Sciences) : Quelle est la durée de la rotation de la Terre sur elle-même ?", "24 heures", ["365 jours", "12 heures", "28 jours"], "La rotation de 24h entraîne l'alternance jour/nuit."),
+                    ("Q19 (Anglais) : Comment demande-t-on l'âge d'une personne en anglais ?", "How old are you?", ["What is your age?", "How are you?", "Where are you from?"], "La structure correcte est 'How old are you?'."),
+                    ("Q20 (Sciences) : Quelle condition est indispensable pour que la vie existe sur une planète ?", "La présence d'eau à l'état liquide", ["Un sol uniquement rocheux", "L'absence d'atmosphère", "Une température de 100°C"], "L'eau liquide est le milieu indispensable aux réactions de la vie.")
+                ]
+            }
+            
+            q_list_curr = q_raw_lea.get(j_sel, q_raw_lea[1])
+            
+            with st.form(key=f"f_lea_{j_sel}"):
+                user_ans = []
+                for idx, item in enumerate(q_list_curr):
+                    qt, qcorr, qwrongs, qexp = item
+                    q_id = f"lea_{j_sel}_{idx}"
+                    opts = get_shuffled_options(q_id, qcorr, qwrongs)
+                    chosen = st.radio(f"**{qt}**", opts, key=f"r_{q_id}")
+                    user_ans.append((qt, chosen, qcorr, qexp, q_id))
                 
-                # BANQUE DE QUESTIONS DU STUDIO POUR LÉA (6ÈME)
-                q_raw_lea = {
-                    1: [
-                        ("Q1 (Français) : Dans la Galerie, Léa observe une statue hybride. Quel terme désigne une créature composée d'éléments d'espèces différentes ?", "Une créature hybride", ["Une créature réelle", "Un animal domestique", "Une créature fossile"], "Une créature hybride associe des éléments de plusieurs animaux."),
-                        ("Q2 (Maths) : Pour déverrouiller le coffre hanté, Léa classe : 12,4 cm, 12,05 cm et 12,35 cm. Quel est l'ordre croissant correct ?", "12,05 cm < 12,35 cm < 12,4 cm", ["12,4 cm < 12,35 cm < 12,05 cm", "12,35 cm < 12,05 cm < 12,4 cm", "12,05 cm < 12,4 cm < 12,35 cm"], "En comparant les dixièmes et centièmes : 12,05 < 12,35 < 12,40."),
-                        ("Q3 (Anglais) : Pour demander de l'aide poliment à la gargoyle de la galerie, quelle formule Léa utilise-t-elle ?", "Can you help me please?", ["Where is the room?", "Thank you very much", "Nice to meet you"], "La formule de demande polie est 'Can you help me please?'."),
-                        ("Q4 (Sciences) : Pourquoi l'araignée géante de la galerie appartient-elle aux arachnides et non aux insectes ?", "Elle a 8 pattes et pas d'antennes", ["Elle a 6 pattes et des ailes", "Elle a un squelette interne", "Elle a 10 pattes"], "Les arachnides ont 8 pattes (4 paires) et pas d'antennes."),
-                        ("Q5 (Hist-Géo) : Quel nom porte la première écriture née en Mésopotamie vers 3500 av. J.-C. ?", "L'écriture cunéiforme", ["Les hiéroglyphes", "L'alphabet grec", "L'écriture cursive"], "L'écriture cunéiforme en forme de coins est apparue en Mésopotamie."),
-                        ("Q6 (Français) : Quel sentiment désigne une peur extrême face aux monstres de la galerie ?", "L'épouvante", ["La joie", "La sérénité", "L'indifférence"], "L'épouvante est un sentiment de terreur intense face au danger."),
-                        ("Q7 (Maths) : La dalle carrée de la gargouille mesure 1,5 m de côté. Son périmètre est égal à :", "6 m", ["2,25 m", "4,5 m", "3 m"], "Périmètre = 4 × 1,5 m = 6 m."),
-                        ("Q8 (Sciences) : Quelle est la durée du mouvement de révolution de la Terre autour du Soleil ?", "365,25 jours (1 an)", ["24 heures", "12 heures", "28 jours"], "La révolution complète dure 365,25 jours et définit une année."),
-                        ("Q9 (Anglais) : Quelle fourniture scolaire traduit 'a glue stick' ?", "Un bâton de colle", ["Un crayon à papier", "Une règle", "Une trousse"], "'A glue stick' désigne un bâton de colle."),
-                        ("Q10 (Français) : Dans le conte hanté, quel événement vient rompre la vie paisible du royaume ?", "L'élément perturbateur", ["La situation initiale", "Les péripéties", "Le dénouement"], "L'élément perturbateur déclenche les aventures du récit."),
-                        ("Q11 (Maths) : Léa a 20 pièces magiques et achète une potion à 7,80 pièces. Combien lui reste-t-il ?", "12,20 pièces", ["12,80 pièces", "13,20 pièces", "11,80 pièces"], "20 - 7,80 = 12,20."),
-                        ("Q12 (Hist-Géo) : À quelle période les hommes préhistoriques deviennent-ils agriculteurs et sédentaires ?", "Le Néolithique", ["Le Paléolithique", "Le Moyen Âge", "L'Antiquité"], "Le Néolithique marque le passage à la sédentarité et l'agriculture."),
-                        ("Q13 (Sciences) : Quelle caractéristique biologique est partagée par TOUS les êtres vivants ?", "Ils naissent, se nourrissent et se reproduisent", ["Ils ont des plumes", "Ils vivent sous l'eau", "Ils volent dans l'air"], "Tous les êtres vivants naissent, se nourrissent, grandissent et se reproduisent."),
-                        ("Q14 (Français) : Dans 'la gargouille attentive', quelle est la classe grammaticale de 'attentive' ?", "Adjectif qualificatif", ["Nom commun", "Verbe à l'infinitif", "Adverbe"], "'Attentive' qualifie le nom 'gargouille'."),
-                        ("Q15 (Anglais) : Que signifie le verbe anglais 'to spell' ?", "Épeler", ["Écrire", "Dessiner", "Compter"], "'To spell' signifie nommer les lettres d'un mot."),
-                        ("Q16 (Maths) : Un grimoire contient 24 sorts. Combien font les 3/4 de ces sorts ?", "18 sorts", ["12 sorts", "20 sorts", "16 sorts"], "(24 ÷ 4) × 3 = 18."),
-                        ("Q17 (Hist-Géo/EMC) : Quel est l'objectif majeur des règles de vie collective au collège ?", "Garantir le vivre-ensemble et le respect", ["Punir les élèves", "Donner des devoirs", "Sélectionner les délégués"], "L'EMC enseigne le vivre-ensemble et le respect de chacun."),
-                        ("Q18 (Sciences) : Quelle est la durée de la rotation de la Terre sur elle-même ?", "24 heures", ["365 jours", "12 heures", "28 jours"], "La rotation de 24h entraîne l'alternance jour/nuit."),
-                        ("Q19 (Anglais) : Comment demande-t-on l'âge d'une personne en anglais ?", "How old are you?", ["What is your age?", "How are you?", "Where are you from?"], "La structure correcte est 'How old are you?'."),
-                        ("Q20 (Sciences) : Quelle condition est indispensable pour que la vie existe sur une planète ?", "La présence d'eau à l'état liquide", ["Un sol uniquement rocheux", "L'absence d'atmosphère", "Une température de 100°C"], "L'eau liquide est le milieu indispensable aux réactions de la vie.")
-                    ]
-                }
+                sub = st.form_submit_button("📜 Valider l'Épreuve au Maître du Manoir")
+            
+            if sub:
+                score = sum([1 for item in user_ans if item[1] == item[2]])
+                total = len(user_ans)
                 
-                q_list_curr = q_raw_lea.get(j_sel, q_raw_lea[1])
+                st.subheader(f"📊 Résultat de l'Épreuve : {score} / {total}")
                 
-                with st.form(key=f"f_lea_{j_sel}"):
-                    user_ans = []
-                    for idx, item in enumerate(q_list_curr):
-                        qt, qcorr, qwrongs, qexp = item
-                        q_id = f"lea_{j_sel}_{idx}"
-                        opts = get_shuffled_options(q_id, qcorr, qwrongs)
-                        
-                        st.markdown(f"**{qt}**")
-                        chosen = st.radio(f"Choix pour {q_id}", opts, key=f"r_{q_id}", label_visibility="collapsed")
-                        
-                        # Si soumis précédemment, afficher la correction direct sous la question
-                        if f"submitted_lea_{j_sel}" in st.session_state:
-                            prev_ans = st.session_state[f"ans_lea_{j_sel}_{idx}"]
-                            if prev_ans == qcorr:
-                                st.markdown(f"""
-                                    <div class="correct-card">
-                                        🟩 <b>Réponse : {prev_ans} (Exact !)</b><br>
-                                        💡 <i>Explication : {qexp}</i>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                            else:
-                                st.markdown(f"""
-                                    <div class="wrong-card">
-                                        libre 🟥 <b>Ta réponse : <strike>{prev_ans}</strike> ❌</b><br>
-                                        ✅ Bonne réponse : <b>{qcorr}</b><br>
-                                        💡 <i>Explication : {qexp}</i>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                        st.markdown("---")
-                        user_ans.append((qt, chosen, qcorr, qexp, idx))
-                    
-                    sub = st.form_submit_button("📜 Valider l'Épreuve au Maître du Manoir")
-                
-                if sub:
-                    st.session_state[f"submitted_lea_{j_sel}"] = True
-                    for qt, chosen, qcorr, qexp, idx in user_ans:
-                        st.session_state[f"ans_lea_{j_sel}_{idx}"] = chosen
-                    safe_rerun()
-                
-                if f"submitted_lea_{j_sel}" in st.session_state:
-                    score = sum([1 for item in user_ans if st.session_state.get(f"ans_lea_{j_sel}_{item[4]}") == item[2]])
-                    total = len(user_ans)
-                    
-                    st.subheader(f"📊 Résultat de l'Épreuve du Jour {j_sel} : {score} / {total}")
-                    
-                    if score == total:
-                        st.session_state.unlocked_lea.add(j_sel + 1)
-                        if j_sel < 6:
-                            st.markdown(f"""
-                                <div class="code-box-success">
-                                    🏆 <b>SCORE PARFAIT ATTEINT : 20 / 20 !</b><br><br>
-                                    🌟 <b>CODE SECRET DU JOUR {j_sel} :</b><br>
-                                    <span style="font-size:32px; color:#FF9E00; font-weight:bold;">{CODES_LEA[j_sel]}</span><br><br>
-                                    📝 Note ce code dans ton Journal de la Quête pour déverrouiller le Jour {j_sel+1} !
-                                </div>
-                            """, unsafe_allow_html=True)
-                        else:
-                            # JOUR 6 : AFFICHER LA VIDÉO ÉPILOGUE APRÈS LA RÉUSSITE DU QUIZ
-                            st.markdown("""
-                                <div class="code-box-success">
-                                    🎉 <b>GRAND RITUEL RÉUSSI : 20 / 20 !</b><br>
-                                    La malédiction du Manoir est levée ! Regarde l'Épilogue ci-dessous pour célébrer la Victoire !
-                                </div>
-                            """, unsafe_allow_html=True)
-                            display_video_if_exists([["epilogue", "6"], ["victoire", "6"], ["bal", "6"]], "Épilogue : La Victoire Finale")
-                    else:
+                for item in user_ans:
+                    qt, u_a, c_a, exp, q_id = item
+                    if u_a == c_a:
                         st.markdown(f"""
-                            <div class="warning-box">
-                                🔒 <b>SCORE : {score} / {total}. LE CODE RESTE SCELLÉ !</b><br>
-                                Tu as fait {total - score} erreur(s). Seul un sans-faute de 20/20 révèle le Code Secret / l'Épilogue !<br>
-                                Consulte l'onglet <b>Le Grimoire du Savoir</b> pour réviser puis retente ta chance !
+                            <div class="correct-card">
+                                🟩 <b>{qt}</b><br>
+                                Ta réponse : <i>{u_a}</i> (Exact !)<br>
+                                💡 <i>Explication : {exp}</i>
                             </div>
                         """, unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"""
+                            <div class="wrong-card">
+                                🟥 <b>{qt}</b><br>
+                                Ta réponse : <strike>{u_a}</strike> ❌<br>
+                                ✅ Bonne réponse : <b>{c_a}</b><br>
+                                💡 <i>Explication : {exp}</i>
+                            </div>
+                        """, unsafe_allow_html=True)
+                
+                if score == total:
+                    st.session_state.unlocked_lea.add(j_sel + 1)
+                    if j_sel == 6:
+                        display_video_if_exists([["epilogue", "6"], ["victoire", "6"], ["bal", "6"]], "Épilogue : La Victoire Finale")
+                        st.markdown("""
+                            <div class="code-box-success">
+                                🎉 <b>VICTOIRE FINALE & GRAND BAL D'HALLOWEEN !</b><br><br>
+                                🏆 Tu as débloqué tous les Mots-Pouvoirs et libéré la Citrouille d'Émeraude !
+                            </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"""
+                            <div class="code-box-success">
+                                🏆 <b>SCORE PARFAIT ATTEINT : 20 / 20 !</b><br><br>
+                                🌟 <b>CODE SECRET DU JOUR {j_sel} :</b><br>
+                                <span style="font-size:32px; color:#FF9E00; font-weight:bold;">{CODES_LEA[j_sel]}</span><br><br>
+                                📝 Note ce code dans ton Journal de la Quête pour déverrouiller le Jour {j_sel+1} !
+                            </div>
+                        """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""
+                        <div class="warning-box">
+                            🔒 <b>SCORE : {score} / {total}. LE CODE RESTE SCELLÉ !</b><br>
+                            Tu as fait {total - score} erreur(s). Seul un sans-faute de 20/20 révèle le Code Secret !<br>
+                            Consulte l'onglet <b>Le Grimoire du Savoir</b> pour réviser puis retente ta chance !
+                        </div>
+                    """, unsafe_allow_html=True)
 
     # --- TAB 3 : LE GRIMOIRE DU SAVOIR ---
     with tab_grimoire:
         st.subheader("📚 Le Grimoire du Savoir — Manuel de Révision Complet (6ème)")
-        display_pdf_download_button([["grimoire", "lea"], ["grimoire", "6"], ["grimoire", "savoir"]], "Le Grimoire du Savoir - Léa 6ème")
+        display_pdf_if_exists([["grimoire", "lea"], ["grimoire", "6"], ["grimoire", "savoir"]], "Le Grimoire du Savoir - Léa 6ème")
 
 # ==============================================================================
 # SECTION POUR LUCAS (4ÈME)
 # ==============================================================================
 else:
-    st.markdown("""<h2 style="font-size: 2.2rem !important; color: #E0AAFF !important;">⚡ Espace Aventure : Lucas (4ème)</h2>""", unsafe_allow_html=True)
+    st.markdown('<div class="section-title">⚡ Espace Aventure : Lucas (4ème)</div>', unsafe_allow_html=True)
     
     tab_accueil_journal_l, tab_aventure_l, tab_grimoire_l = st.tabs([
         "📖 Mon Journal de la Quête (Page d'Accueil)",
@@ -601,7 +617,7 @@ else:
             </div>
         """, unsafe_allow_html=True)
         
-        display_pdf_download_button([["journal", "crypte"], ["journal", "lucas"], ["journal", "4"]], "Le Journal de la Quête - Lucas 4ème")
+        display_pdf_if_exists([["journal", "crypte"], ["journal", "lucas"], ["journal", "4"]], "Le Journal de la Quête - Lucas 4ème")
         
         st.subheader("🗺️ Carte de la Crypte & Codes Secrets Débloqués")
         col_l1, col_l2, col_l3 = st.columns(3)
@@ -639,18 +655,30 @@ else:
     # --- TAB 2 : LA QUÊTE & LES SALLES ---
     with tab_aventure_l:
         salles_lucas = {
-            0: "Jour 0 : 🎬 Lancement & Bande-Annonce de la Crypte",
-            1: "Jour 1 : 🧪 Le Laboratoire Maudit",
-            2: "Jour 2 : 📖 La Bibliothèque des Ombres",
-            3: "Jour 3 : ⚙️ La Salle des Engrenages",
-            4: "Jour 4 : 👑 Le Tombeau des Rois",
-            5: "Jour 5 : 🌌 Le Portail du Cauchemar",
-            6: "Jour 6 : 🏆 Le Verrou du Maître & Épilogue"
+            0: "Jour 0 : 🎬 Lancement & Bande-Annonce - La Révélation de la Crypte",
+            1: "Jour 1 : Le Laboratoire Maudit & des Alambics",
+            2: "Jour 2 : La Bibliothèque des Ombres & des Grimoires",
+            3: "Jour 3 : La Salle des Engrenages & des Rouages",
+            4: "Jour 4 : Le Tombeau des Rois & des Sarcophages",
+            5: "Jour 5 : Le Portail du Cauchemar & de la Faille",
+            6: "Jour 6 : Le Verrou du Maître & Grand Final"
         }
         
         j_sel = st.selectbox("📍 Sélectionnez la Salle à Explorer :", list(salles_lucas.keys()), format_func=lambda x: salles_lucas[x])
         
-        if j_sel not in st.session_state.unlocked_lucas and j_sel > 1:
+        if j_sel == 0:
+            st.markdown("### 📍 Jour 0 : Lancement de l'Aventure & Bande-Annonce")
+            display_video_if_exists([["bande-annonce", "4"], ["crypte", "4"], ["trailer", "4"], ["j0", "4"]], "Bande-Annonce - La Crypte des Ombres")
+            st.markdown("""
+                <div class="journal-card">
+                    <h3 style="color: #FF9E00 !important;">🦇 Bienvenue dans la Crypte des Ombres !</h3>
+                    <p>Lucas, une faille ténébreuse s'est ouverte au plus profond de la Crypte et menace de libérer le Cauchemar d'outre-tombe.</p>
+                    <p><b>Ton plan de vol :</b> Chaque jour de tes vacances, entre dans une nouvelle salle hantée, affronte l'épreuve des 8 matières de 4ème en obtenant un <b>20/20 parfait</b>, et inscris le Code Secret dans ton Journal d'Alchimie !</p>
+                    <p style="color: #00FFCC !important; font-weight: bold;">Rends-toi dès maintenant dans le Laboratoire Maudit (Jour 1) pour débuter la quête !</p>
+                </div>
+            """, unsafe_allow_html=True)
+
+        elif j_sel not in st.session_state.unlocked_lucas and j_sel > 1:
             st.markdown(f"""
                 <div class="warning-box">
                     🔒 <b>Passage bloqué par un Vile-Sort !</b><br>
@@ -669,131 +697,107 @@ else:
         else:
             st.markdown(f"### 📍 {salles_lucas[j_sel]}")
             
-            if j_sel == 0:
-                # JOUR 0 : BANDE ANNONCE & LANCEMENT
-                display_video_if_exists([["bande", "annonce"], ["crypte"], ["4°"], ["4e"]], "Bande-Annonce Général — La Crypte des Ombres")
-                st.markdown("""
-                    <div class="journal-card">
-                        <h3 style="color: #FF9E00 !important;">🦇 Bienvenue dans la Crypte des Ombres, Lucas !</h3>
-                        <p>Visionne la bande-annonce ci-dessus pour découvrir la menace qui pèse sur l'école.</p>
-                        <p><b>Comment jouer :</b></p>
-                        <ol>
-                            <li>Sélectionne <b>Jour 1</b> dans le menu déroulant ci-dessus.</li>
-                            <li>Regarde le teaser de la salle et résous les 20 épreuves multi-matières.</li>
-                            <li>En réalisant un 20/20, l'esprit de la crypte te révélera le <b>Code Secret</b> requis pour avancer.</li>
-                        </ol>
-                    </div>
-                """, unsafe_allow_html=True)
+            if j_sel == 6:
+                st.subheader("🧪 Épreuve Finale du Jour 6 : Le Grand Rituel d'Évasion de la Crypte")
+                st.caption("Validez vos 20 réponses pour déclencher la vidéo d'Épilogue et sceller le Portail du Cauchemar !")
             else:
-                # TEASER VIDÉO DE LA SALLE
-                if j_sel < 6:
-                    display_video_if_exists([["jour 1", "4"], ["labo", "4"], ["jour 1"], ["jour 2", "4"], ["jour 3", "4"], ["jour 4", "4"], ["jour 5", "4"]], f"Teaser Vidéo - Jour {j_sel}")
-                
-                st.subheader(f"🧪 Épreuve du Jour {j_sel} : Les 20 Questions Multi-Matières Scénarisées du Studio")
+                display_video_if_exists([["jour 1", "4"], ["labo", "4"], ["jour 1"], ["jour 2", "4"], ["jour 3", "4"], ["jour 4", "4"], ["jour 5", "4"]], f"Teaser Vidéo - Jour {j_sel}")
+                st.subheader("🧪 Épreuve du Jour : Les 20 Questions Multi-Matières Scénarisées du Studio")
                 st.caption("Sélectionnez la bonne réponse parmi les 4 propositions mélangées pour chaque question.")
+            
+            q_raw_lucas = {
+                1: [
+                    ("Q1 (Physique-Chimie) : Dans le Laboratoire Maudit, quel gaz réactif indispensable est consommé lors de la combustion alchimique du carbone ?", "Le dioxygène (O2)", ["Le diazote (N2)", "Le dioxyde de carbone", "L'hélium"], "La combustion consomme du carbone (C) et du dioxygène (O2)."),
+                    ("Q2 (Maths) : Pour équilibrer la balance du laboratoire, Lucas simplifie la fraction 21/35. Quelle est sa forme irréductible ?", "3/5", ["7/5", "21/35", "5/3"], "En divisant le numérateur et le dénominateur par 7 : 21÷7 = 3 et 35÷7 = 5."),
+                    ("Q3 (Français) : Dans 'La Parure' de Maupassant, lue sur le grimoire du labo, quel défaut cause la ruine de Mathilde Loisel ?", "La vanité et le désir de paraître", ["L'avarice", "La colère", "La paresse"], "Sa vanité la pousse à emprunter la parure et perdre 10 ans de sa vie."),
+                    ("Q4 (Hist-Géo) : Quel grand port britannique s'est enrichi au XVIIIe siècle grâce au commerce triangulaire des navires négriers ?", "Liverpool", ["Marseille", "Venise", "Lisbonne"], "Liverpool était l'un des premiers ports négriers européens."),
+                    ("Q5 (Techno) : Dans quel ordre exact s'enchaînent les 3 fonctions de la chaîne d'information des pièges du laboratoire ?", "Acquérir -> Traiter -> Communiquer", ["Alimenter -> Distribuer -> Transmettre", "Entrer -> Sortir -> Bloquer", "Capter -> Stocker -> Effacer"], "La chaîne capte (Acquérir), traite, puis transmet (Communiquer)."),
+                    ("Q6 (Physique-Chimie) : Quels sont les deux gaz principaux qui composent l'air du laboratoire et de l'atmosphère terrestre ?", "78% Diazote (N2) et 21% Dioxygène (O2)", ["50% Oxygène et 50% Carbone", "100% CO2", "90% Hydrogène et 10% Hélium"], "L'air comprend environ 4/5 de diazote et 1/5 de dioxygène."),
+                    ("Q7 (Maths) : En multipliant les deux coefficients négatifs des fiole magiques (-3) × (-4), quel résultat positif Lucas obtient-il ?", "12", ["-12", "7", "-7"], "Le produit de deux nombres négatifs est positif : (-3) × (-4) = +12."),
+                    ("Q8 (SVT) : Comment s'appelle le point de rupture en profondeur sous le laboratoire d'où partent les ondes sismiques ?", "L'hypocentre (foyer)", ["L'épicentre", "La faille externe", "Le maelström"], "L'hypocentre est le lieu en profondeur où se produit la rupture."),
+                    ("Q9 (Anglais) : Quel adjectif anglais qualifie un laboratoire parfaitement rangé et ordonné ?", "Tidy", ["Generous", "Bad-tempered", "Noisy"], "'Tidy' signifie rangé, ordonné."),
+                    ("Q10 (Espagnol) : Quel verbe exprime une localisation temporaire en espagnol ('la fiole est à droite') ?", "Estar", ["Ser", "Tener", "Hacer"], "On utilise 'estar' pour la localisation (ex: 'está a la derecha')."),
+                    ("Q11 (Maths) : Lucas dose les réactifs : 12/15 + 1/5. Quelle est la somme entière simplifiée obtenue ?", "1", ["13/20", "13/15", "2"], "1/5 = 3/15. Donc 12/15 + 3/15 = 15/15 = 1."),
+                    ("Q12 (Français) : Dans '« Je suis le gardien du labo », riposta-t-il', quelle est la ponctuation exacte du discours direct ?", "Guillemets et virgule avant l'incise", ["Aucun guillemet", "Des parenthèses", "Des crochets"], "Le discours direct utilise les guillemets et un verbe de parole en incise."),
+                    ("Q13 (SVT) : Quelle est la réaction immédiate du système cardiaque de Lucas lorsqu'il court pour fuir un piège ?", "L'augmentation de la fréquence cardiaque", ["La baisse du rythme cardiaque", "Aucun changement", "L'arrêt cardiaque"], "Le cœur bat plus vite pour approvisionner les muscles en O2."),
+                    ("Q14 (Anglais) : Quel mot interrogatif anglais exprime la possession pour demander à qui appartient un grimoire ?", "Whose", ["Where", "Which", "Why"], "'Whose' est le pronom interrogatif de possession."),
+                    ("Q15 (Espagnol) : Conjugue le verbe 'sentirse' avec 'el demonio' au présent de l'indicatif :", "Se siente", ["Se sienta", "Siente", "Se sentamos"], "'Sentirse' se conjugue 'se siente' au présent avec diphtongue e->ie."),
+                    ("Q16 (Maths) : Si la trottinette alchimique roule à 20 km/h, combien de minutes met Lucas pour parcourir 5 km ?", "15 minutes", ["30 minutes", "10 minutes", "45 minutes"], "5 km est le quart de 20 km, soit 1/4 d'heure = 15 minutes."),
+                    ("Q17 (Techno) : Quel composant électrique assure la fonction 'Distribuer' dans la chaîne d'énergie du labo ?", "L'interrupteur / le relai", ["La batterie", "Le moteur", "La roue dentée"], "Le relai ou interrupteur distribue l'énergie vers le moteur."),
+                    ("Q18 (Physique-Chimie) : Quel est l'impact planétaire du dioxyde de carbone (CO2) rejeté par la combustion ?", "C'est un gaz à effet de serre contribuant au réchauffement", ["Il détruit l'eau", "Il refroidit le climat", "Il produit de l'oxygène"], "Le CO2 est un gaz à effet de serre qui retient la chaleur dans l'atmosphère."),
+                    ("Q19 (Français) : Transforme au discours indirect : Le professeur recommanda : 'Faites vos exercices !'", "Le professeur recommanda de faire leurs exercices.", ["Le professeur dit faites vos exercices.", "Le professeur demande quoi.", "Le professeur ordonna de faire mes devoirs."], "L'impératif au discours direct devient 'de + infinitif'."),
+                    ("Q20 (SVT) : Comment s'appelle le point à la surface situé directement à la verticale du foyer sismique du labo ?", "L'épicentre", ["L'hypocentre", "Le cratère", "Le pôle"], "L'épicentre est le point en surface où les secousses sont les plus fortes.")
+                ]
+            }
+            
+            q_list_curr_l = q_raw_lucas.get(j_sel, q_raw_lucas[1])
+            
+            with st.form(key=f"f_lucas_{j_sel}"):
+                user_ans_l = []
+                for idx, item in enumerate(q_list_curr_l):
+                    qt, qcorr, qwrongs, qexp = item
+                    q_id = f"lucas_{j_sel}_{idx}"
+                    opts = get_shuffled_options(q_id, qcorr, qwrongs)
+                    chosen = st.radio(f"**{qt}**", opts, key=f"r_{q_id}")
+                    user_ans_l.append((qt, chosen, qcorr, qexp, q_id))
                 
-                q_raw_lucas = {
-                    1: [
-                        ("Q1 (Physique-Chimie) : Quel gaz réactif est consommé lors de la combustion du carbone ?", "Le dioxygène (O2)", ["Le diazote (N2)", "Le dioxyde de carbone", "L'hélium"], "La combustion consomme du carbone (C) et du dioxygène (O2)."),
-                        ("Q2 (Maths) : Quelle est la forme irréductible de la fraction 21/35 ?", "3/5", ["7/5", "21/35", "5/3"], "En divisant le numérateur et le dénominateur par 7 : 21÷7 = 3 et 35÷7 = 5."),
-                        ("Q3 (Français) : Dans 'La Parure' de Maupassant, quel défaut cause la ruine de Mathilde Loisel ?", "La vanité et le désir de paraître", ["L'avarice", "La colère", "La paresse"], "Sa vanité la pousse à emprunter la parure et perdre 10 ans de sa vie."),
-                        ("Q4 (Hist-Géo) : Quel port britannique s'est enrichi grâce au commerce triangulaire au XVIIIe siècle ?", "Liverpool", ["Marseille", "Venise", "Lisbonne"], "Liverpool était l'un des premiers ports négriers européens."),
-                        ("Q5 (Techno) : Dans quel ordre s'enchaînent les 3 fonctions de la chaîne d'information ?", "Acquérir -> Traiter -> Communiquer", ["Alimenter -> Distribuer -> Transmettre", "Entrer -> Sortir -> Bloquer", "Capter -> Stocker -> Effacer"], "La chaîne capte (Acquérir), traite, puis transmet (Communiquer)."),
-                        ("Q6 (Physique-Chimie) : Quels sont les deux gaz principaux composant l'atmosphère terrestre ?", "78% Diazote (N2) et 21% Dioxygène (O2)", ["50% Oxygène et 50% Carbone", "100% CO2", "90% Hydrogène et 10% Hélium"], "L'air comprend environ 4/5 de diazote et 1/5 de dioxygène."),
-                        ("Q7 (Maths) : Quel est le résultat de (-3) × (-4) ?", "12", ["-12", "7", "-7"], "Le produit de deux nombres négatifs est positif : (-3) × (-4) = +12."),
-                        ("Q8 (SVT) : Comment s'appelle le point de rupture en profondeur d'où partent les ondes sismiques ?", "L'hypocentre (foyer)", ["L'épicentre", "La faille externe", "Le maelström"], "L'hypocentre est le lieu en profondeur où se produit la rupture."),
-                        ("Q9 (Anglais) : Quel adjectif qualifie une personne ordonnée ?", "Tidy", ["Generous", "Bad-tempered", "Noisy"], "'Tidy' signifie rangé, ordonné."),
-                        ("Q10 (Espagnol) : Quel verbe exprime une localisation temporaire en espagnol ('être à droite') ?", "Estar", ["Ser", "Tener", "Hacer"], "On utilise 'estar' pour la localisation."),
-                        ("Q11 (Maths) : Calcule la somme de 12/15 + 1/5 sous forme simplifiée :", "1", ["13/20", "13/15", "2"], "1/5 = 3/15. Donc 12/15 + 3/15 = 15/15 = 1."),
-                        ("Q12 (Français) : Dans '« Je suis la fille du puisatier », riposta-t-elle', quelle est la ponctuation du discours direct ?", "Guillemets et virgule avant l'incise", ["Aucun guillemet", "Des parenthèses", "Des crochets"], "Le discours direct utilise les guillemets et un verbe de parole."),
-                        ("Q13 (SVT) : Quelle est la conséquence de l'effort physique sur le rythme cardiaque ?", "L'augmentation de la fréquence cardiaque", ["La baisse du rythme cardiaque", "Aucun changement", "L'arrêt cardiaque"], "Le cœur bat plus vite pour approvisionner les muscles en O2."),
-                        ("Q14 (Anglais) : Quel mot interrogatif exprime la possession ('À qui appartient...') ?", "Whose", ["Where", "Which", "Why"], "'Whose' est le pronom interrogatif de possession."),
-                        ("Q15 (Espagnol) : Conjugue le verbe 'sentirse' avec 'el demonio' au présent :", "Se siente", ["Se sienta", "Siente", "Se sentamos"], "'Sentirse' se conjugue 'se siente' au présent avec diphtongue."),
-                        ("Q16 (Maths) : Si tu roules à 20 km/h, combien de temps mets-tu pour parcourir 5 km ?", "15 minutes", ["30 minutes", "10 minutes", "45 minutes"], "5 km est le quart de 20 km, soit 15 minutes."),
-                        ("Q17 (Techno) : Quel composant assure la fonction 'Distribuer' dans la chaîne d'énergie ?", "L'interrupteur / le relai", ["La batterie", "Le moteur", "La roue dentée"], "Le relai ou interrupteur distribue l'énergie vers le moteur."),
-                        ("Q18 (Physique-Chimie) : Quel est l'impact du dioxyde de carbone (CO2) sur la planète ?", "C'est un gaz à effet de serre contribuant au réchauffement", ["Il détruit l'eau", "Il refroidit le climat", "Il produit de l'oxygène"], "Le CO2 est un gaz à effet de serre qui retient la chaleur."),
-                        ("Q19 (Français) : Transforme au discours indirect : Le professeur recommanda : 'Faites vos exercices !'", "Le professeur recommanda de faire leurs exercices.", ["Le professeur dit faites vos exercices.", "Le professeur demande quoi.", "Le professeur ordonna de faire mes devoirs."], "L'impératif au discours direct devient 'de + infinitif'."),
-                        ("Q20 (SVT) : Comment s'appelle le point à la surface situé directement à la verticale du foyer sismique ?", "L'épicentre", ["L'hypocentre", "Le cratère", "Le pôle"], "L'épicentre est le point en surface où les secousses sont les plus fortes.")
-                    ]
-                }
+                sub_l = st.form_submit_button("⚡ Activer l'Autel d'Évasion")
+            
+            if sub_l:
+                score_l = sum([1 for item in user_ans_l if item[1] == item[2]])
+                total_l = len(user_ans_l)
                 
-                q_list_curr_l = q_raw_lucas.get(j_sel, q_raw_lucas[1])
+                st.subheader(f"📊 Résultat de l'Épreuve : {score_l} / {total_l}")
                 
-                with st.form(key=f"f_lucas_{j_sel}"):
-                    user_ans_l = []
-                    for idx, item in enumerate(q_list_curr_l):
-                        qt, qcorr, qwrongs, qexp = item
-                        q_id = f"lucas_{j_sel}_{idx}"
-                        opts = get_shuffled_options(q_id, qcorr, qwrongs)
-                        
-                        st.markdown(f"**{qt}**")
-                        chosen = st.radio(f"Choix pour {q_id}", opts, key=f"r_{q_id}", label_visibility="collapsed")
-                        
-                        # Si soumis précédemment, afficher la correction direct sous la question
-                        if f"submitted_lucas_{j_sel}" in st.session_state:
-                            prev_ans = st.session_state[f"ans_lucas_{j_sel}_{idx}"]
-                            if prev_ans == qcorr:
-                                st.markdown(f"""
-                                    <div class="correct-card">
-                                        🟩 <b>Réponse : {prev_ans} (Exact !)</b><br>
-                                        💡 <i>Explication : {qexp}</i>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                            else:
-                                st.markdown(f"""
-                                    <div class="wrong-card">
-                                        libre 🟥 <b>Ta réponse : <strike>{prev_ans}</strike> ❌</b><br>
-                                        ✅ Bonne réponse : <b>{qcorr}</b><br>
-                                        💡 <i>Explication : {qexp}</i>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                        st.markdown("---")
-                        user_ans_l.append((qt, chosen, qcorr, qexp, idx))
-                    
-                    sub_l = st.form_submit_button("⚡ Activer l'Autel d'Évasion")
-                
-                if sub_l:
-                    st.session_state[f"submitted_lucas_{j_sel}"] = True
-                    for qt, chosen, qcorr, qexp, idx in user_ans_l:
-                        st.session_state[f"ans_lucas_{j_sel}_{idx}"] = chosen
-                    safe_rerun()
-                
-                if f"submitted_lucas_{j_sel}" in st.session_state:
-                    score_l = sum([1 for item in user_ans_l if st.session_state.get(f"ans_lucas_{j_sel}_{item[4]}") == item[2]])
-                    total_l = len(user_ans_l)
-                    
-                    st.subheader(f"📊 Résultat de l'Épreuve du Jour {j_sel} : {score_l} / {total_l}")
-                    
-                    if score_l == total_l:
-                        st.session_state.unlocked_lucas.add(j_sel + 1)
-                        if j_sel < 6:
-                            st.markdown(f"""
-                                <div class="code-box-success">
-                                    🏆 <b>SCORE PARFAIT ATTEINT : 20 / 20 !</b><br><br>
-                                    ⚡ <b>CODE SECRET DU JOUR {j_sel} :</b><br>
-                                    <span style="font-size:32px; color:#FF9E00; font-weight:bold;">{CODES_LUCAS[j_sel]}</span><br><br>
-                                    📝 Note ce code dans ton Journal de la Quête pour déverrouiller le Jour {j_sel+1} !
-                                </div>
-                            """, unsafe_allow_html=True)
-                        else:
-                            # JOUR 6 : AFFICHER LA VIDÉO ÉPILOGUE APRÈS LA RÉUSSITE DU QUIZ
-                            st.markdown("""
-                                <div class="code-box-success">
-                                    🎉 <b>VERROU DU MAÎTRE BRISÉ : 20 / 20 !</b><br>
-                                    Le Portail du Cauchemar est scellé ! Regarde l'Épilogue ci-dessous pour fêter la Victoire !
-                                </div>
-                            """, unsafe_allow_html=True)
-                            display_video_if_exists([["epilogue", "4"], ["victoire", "4"]], "Épilogue : La Victoire sur la Crypte")
-                    else:
+                for item in user_ans_l:
+                    qt, u_a, c_a, exp, q_id = item
+                    if u_a == c_a:
                         st.markdown(f"""
-                            <div class="warning-box">
-                                🔒 <b>SCORE : {score_l} / {total_l}. LE CODE RESTE SCELLÉ !</b><br>
-                                Tu as fait {total_l - score_l} erreur(s). Seul un sans-faute de 20/20 révèle le Code Secret / l'Épilogue !<br>
-                                Consulte l'onglet <b>Le Grimoire des Sortilèges</b> pour réviser puis retente ta chance !
+                            <div class="correct-card">
+                                🟩 <b>{qt}</b><br>
+                                Ta réponse : <i>{u_a}</i> (Exact !)<br>
+                                💡 <i>Explication : {exp}</i>
                             </div>
                         """, unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"""
+                            <div class="wrong-card">
+                                🟥 <b>{qt}</b><br>
+                                Ta réponse : <strike>{u_a}</strike> ❌<br>
+                                ✅ Bonne réponse : <b>{c_a}</b><br>
+                                💡 <i>Explication : {exp}</i>
+                            </div>
+                        """, unsafe_allow_html=True)
+                
+                if score_l == total_l:
+                    st.session_state.unlocked_lucas.add(j_sel + 1)
+                    if j_sel == 6:
+                        display_video_if_exists([["epilogue", "4"], ["victoire", "4"]], "Épilogue : La Victoire sur la Crypte")
+                        st.markdown("""
+                            <div class="code-box-success">
+                                🎉 <b>TRIOMPHE ÉPIQUE & FERMETURE DU PORTAIL DU CAUCHEMAR !</b><br><br>
+                                🏆 Tu as scellé la Crypte des Ombres et sauvé le royaume de 4ème !
+                            </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"""
+                            <div class="code-box-success">
+                                🏆 <b>SCORE PARFAIT ATTEINT : 20 / 20 !</b><br><br>
+                                ⚡ <b>CODE SECRET DU JOUR {j_sel} :</b><br>
+                                <span style="font-size:32px; color:#FF9E00; font-weight:bold;">{CODES_LUCAS[j_sel]}</span><br><br>
+                                📝 Note ce code dans ton Journal de la Quête pour déverrouiller le Jour {j_sel+1} !
+                            </div>
+                        """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""
+                        <div class="warning-box">
+                            🔒 <b>SCORE : {score_l} / {total_l}. LE CODE RESTE SCELLÉ !</b><br>
+                            Tu as fait {total_l - score_l} erreur(s). Seul un 20/20 révèle le Code Secret !<br>
+                            Consulte l'onglet <b>Le Grimoire des Sortilèges</b> pour réviser puis retente ta chance !
+                        </div>
+                    """, unsafe_allow_html=True)
 
     # --- TAB 3 : LE GRIMOIRE DES SORTILÈGES ---
     with tab_grimoire_l:
         st.subheader("📖 Le Grimoire des Sortilèges — Manuel de Révision Complet (4ème)")
-        display_pdf_download_button([["grimoire", "lucas"], ["grimoire", "4"], ["grimoire", "sortilege"]], "Le Grimoire des Sortilèges - Lucas 4ème")
+        display_pdf_if_exists([["grimoire", "lucas"], ["grimoire", "4"], ["grimoire", "sortilege"]], "Le Grimoire des Sortilèges - Lucas 4ème")
