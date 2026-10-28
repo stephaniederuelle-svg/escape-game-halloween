@@ -19,7 +19,7 @@ def norm_text(text):
         return ""
     return ''.join(c for c in unicodedata.normalize('NFD', str(text).lower()) if unicodedata.category(c) != 'Mn')
 
-# --- STYLES CSS PERSONNALISÉS ---
+# --- STYLES CSS PERSONNALISÉS (PENSÉS POUR UNE LISIBILITÉ PARFAITE) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400&display=swap');
@@ -42,31 +42,6 @@ st.markdown("""
         background-attachment: fixed !important;
     }
 
-    /* Titre Principal IMPOSANT, HEROIQUE & LUMINEUX (GRAND : 2.8REM / ~45PX) */
-    .stApp h1, h1, .main h1 {
-        font-size: 2.8rem !important;
-        font-weight: 900 !important;
-        color: #FF9E00 !important;
-        text-shadow: 0 0 20px rgba(255, 158, 0, 0.8), 3px 3px 6px #000000 !important;
-        margin-bottom: 8px !important;
-        text-align: center !important;
-    }
-
-    /* Sous-titre principal */
-    .main-subtitle {
-        font-size: 1.35rem !important;
-        color: #E0AAFF !important;
-        text-align: center !important;
-        font-weight: bold !important;
-        margin-bottom: 25px !important;
-        text-shadow: 1px 1px 3px #000000 !important;
-    }
-
-    h2, h3, h4 {
-        color: #E0AAFF !important;
-        font-weight: 700 !important;
-    }
-
     /* FORÇAGE ABSOLU DU TEXTE NOIR SUR TOUS LES BOUTONS CLIQUABLES */
     .stButton > button, 
     .stDownloadButton > button, 
@@ -86,7 +61,7 @@ st.markdown("""
     button * {
         color: #000000 !important;
         font-weight: 900 !important;
-        font-size: 1.1rem !important;
+        font-size: 1.15rem !important;
     }
 
     .stButton > button:hover, 
@@ -104,13 +79,17 @@ st.markdown("""
         color: #000000 !important;
     }
 
-    /* LISTE DÉROULANTE (SELECTBOX) : LIBELLÉ VIOLET CLAIR, CHAMP ORANGE, DROPDOWN BLANC AVEC TEXTE NOIR */
-    .stSelectbox label, div[data-testid="stWidgetLabel"] p {
+    /* LISTE DÉROULANTE (SELECTBOX) : LIBELLÉ VIOLET CLAIR BRILLANT (1.35REM / 22PX) */
+    .stSelectbox label, 
+    div[data-testid="stWidgetLabel"] p,
+    div[data-testid="stWidgetLabel"] span {
         color: #E0AAFF !important;
-        font-size: 1.25rem !important;
-        font-weight: bold !important;
+        font-size: 1.35rem !important;
+        font-weight: 900 !important;
+        text-shadow: 1px 1px 3px #000000 !important;
     }
 
+    /* BOÎTE DU MENU SELECTBOX QUAND ELLE EST FERMÉE : FOND ORANGE ET TEXTE NOIR */
     div[data-baseweb="select"] > div, .stSelectbox > div > div {
         background-color: #FF9E00 !important;
         border: 3px solid #FFFFFF !important;
@@ -124,7 +103,7 @@ st.markdown("""
         font-size: 1.15rem !important;
     }
 
-    /* MENU DÉROULANT QUI S'OUVRE AU CLIC (POPOVER BASEWEB) - TEXTE NOIR SUR FOND BLANC */
+    /* MENU DÉROULANT QUI S'OUVRE AU CLIC (POPOVER BASEWEB) - FOND SOMBRE ET TEXTE BLANC NET */
     div[data-baseweb="popover"],
     div[data-baseweb="popover"] *,
     div[data-baseweb="menu"],
@@ -133,13 +112,13 @@ st.markdown("""
     ul[role="listbox"] *,
     li[role="option"],
     li[role="option"] * {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
+        background-color: #231038 !important;
+        color: #FFFFFF !important;
         font-weight: 800 !important;
         font-size: 1.1rem !important;
     }
 
-    /* SURVOL DANS LA LISTE DÉROULANTE */
+    /* SURVOL DANS LA LISTE DÉROULANTE : PASSAGE EN FOND ORANGE ET TEXTE NOIR */
     div[data-baseweb="popover"] li[role="option"]:hover,
     div[data-baseweb="popover"] li[role="option"]:hover *,
     div[data-baseweb="popover"] li[data-highlighted="true"],
@@ -258,7 +237,7 @@ def safe_rerun():
     elif hasattr(st, "experimental_rerun"):
         st.experimental_rerun()
 
-# --- RECHERCHE ET AFFICHAGE DES MÉDIAS (VIDÉOS & PDF EMBARQUÉS DIRECTEMENT) ---
+# --- RECHERCHE ET AFFICHAGE DES MÉDIAS (SANS RAME NI BLOCAGE DU SERVEUR) ---
 def find_media_file_multi(keyword_groups, extension=".mp4"):
     try:
         files = os.listdir(".")
@@ -280,49 +259,36 @@ def display_video_if_exists(keyword_groups, fallback_title):
     else:
         st.info(f"🎬 **Cinéma d'Halloween :** La vidéo *'{fallback_title}'* est prête. *(Déposez le fichier .mp4 sur GitHub pour le lancement direct !)*")
 
-def display_pdf_if_exists(keyword_groups, title):
+def display_pdf_download_button(keyword_groups, title):
     pdf_file = find_media_file_multi(keyword_groups, ".pdf")
     if pdf_file:
-        st.success(f"📜 **Document officiel disponible :** `{pdf_file}`")
+        st.markdown(f"""
+            <div style="background-color: #2D1442; border: 2px solid #00FFCC; border-radius: 12px; padding: 18px; margin-bottom: 20px; text-align: center;">
+                <p style="color: #00FFCC !important; font-weight: bold; font-size: 1.2rem; margin-bottom: 8px;">📜 Document Officiel Détecté : {pdf_file}</p>
+                <p style="color: #FFFFFF !important; margin-bottom: 15px;">Vous pouvez télécharger le fichier PDF complet avec toutes ses illustrations et sa mise en page d'origine ci-dessous :</p>
+            </div>
+        """, unsafe_allow_html=True)
         try:
             with open(pdf_file, "rb") as f:
-                pdf_bytes = f.read()
-                b64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
-            
-            # Affichage direct du PDF dans une visionneuse web embarquée de 750px de hauteur
-            embed_html = f'''
-            <div style="border: 3px solid #C77DFF; border-radius: 14px; overflow: hidden; margin-top: 10px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); background-color: #ffffff;">
-                <object data="data:application/pdf;base64,{b64_pdf}#toolbar=1&navpanes=1&scrollbar=1" type="application/pdf" width="100%" height="750px">
-                    <iframe src="data:application/pdf;base64,{b64_pdf}#toolbar=1&navpanes=1&scrollbar=1" width="100%" height="750px" style="border: none;">
-                        <embed src="data:application/pdf;base64,{b64_pdf}" type="application/pdf" width="100%" height="750px" />
-                    </iframe>
-                </object>
-            </div>
-            '''
-            st.markdown(embed_html, unsafe_allow_html=True)
-            
-            # Bouton de téléchargement du fichier PDF
-            with open(pdf_file, "rb") as f:
                 st.download_button(
-                    f"📥 Télécharger {title} (Fichier PDF original)",
+                    f"📥 Télécharger {title} (Fichier PDF officiel)",
                     f,
                     file_name=pdf_file,
                     mime="application/pdf",
                     key=f"dl_{hashlib.md5(pdf_file.encode()).hexdigest()}"
                 )
         except Exception:
-            st.error(f"Impossible de charger le fichier PDF `{pdf_file}`.")
+            pass
     else:
-        st.info(f"📖 **{title}** *(Déposez le fichier PDF sur GitHub pour l'afficher directement en grand sur cette page !)*")
-    return pdf_file
+        st.info(f"📖 **{title}** *(Déposez le fichier PDF sur GitHub pour l'activer !)*")
 
 # --- INITIALISATION SESSION ---
 if "selected_hero" not in st.session_state:
     st.session_state.selected_hero = "lea"
 if "unlocked_lea" not in st.session_state:
-    st.session_state.unlocked_lea = {1}
+    st.session_state.unlocked_lea = {0, 1}
 if "unlocked_lucas" not in st.session_state:
-    st.session_state.unlocked_lucas = {1}
+    st.session_state.unlocked_lucas = {0, 1}
 
 CODES_LEA = {
     1: "GALERIE-CONTE-6E",
@@ -341,8 +307,8 @@ CODES_LUCAS = {
 }
 
 # --- EN-TÊTE PRINCIPAL GRAND FORMAT & BANNIÈRE HALLOWEEN ---
-st.markdown("""<h1>🎃 L'Académie d'Halloween : Portails d'Évasion</h1>""", unsafe_allow_html=True)
-st.markdown("""<p class="main-subtitle">🕸️ Traversez les salles hantées, résolvez les énigmes de cours et débloquez les Mots-Pouvoirs ! 🕯️</p>""", unsafe_allow_html=True)
+st.markdown("""<h1 style="font-size: 3rem !important; color: #FF9E00 !important; text-align: center; font-weight: 900 !important; text-shadow: 0 0 20px rgba(255, 158, 0, 0.8), 3px 3px 6px #000000; margin-bottom: 5px !important;">🎃 L'Académie d'Halloween : Portails d'Évasion</h1>""", unsafe_allow_html=True)
+st.markdown("""<p style="font-size: 1.45rem !important; color: #E0AAFF !important; text-align: center; font-weight: bold !important; margin-bottom: 25px !important; text-shadow: 1px 1px 3px #000000;">🕸️ Traversez les salles hantées, résolvez les énigmes de cours et débloquez les Mots-Pouvoirs ! 🕯️</p>""", unsafe_allow_html=True)
 
 # Sélection ludique des Avatars
 col_avatar1, col_avatar2 = st.columns(2)
@@ -352,9 +318,9 @@ with col_avatar1:
     border_style = "avatar-selected" if is_active_lea else ""
     st.markdown(f"""
         <div class="avatar-card {border_style}">
-            <h2 style="color: #FF9E00 !important; margin-bottom: 5px; font-size: 1.85rem !important; font-weight: 800;">🔮 Léa — 6ème</h2>
-            <p style="font-size: 1.25rem !important; color: #00FFCC !important; font-weight: bold;">L'Apprentie Sorcière du Manoir</p>
-            <p style="margin: 10px 0; font-size: 1.1rem !important; color: #FFFFFF !important;">🏰 <b>Quête :</b> La Malédiction de la Citrouille d'Émeraude<br>📚 <b>Matières :</b> Français, Maths, Sciences, Hist-Géo, Anglais</p>
+            <h2 style="color: #FF9E00 !important; margin-bottom: 5px; font-size: 2.1rem !important; font-weight: 900 !important;">🔮 Léa — 6ème</h2>
+            <p style="font-size: 1.3rem !important; color: #00FFCC !important; font-weight: bold;">L'Apprentie Sorcière du Manoir</p>
+            <p style="margin: 10px 0; font-size: 1.15rem !important; color: #FFFFFF !important;">🏰 <b>Quête :</b> La Malédiction de la Citrouille d'Émeraude<br>📚 <b>Matières :</b> Français, Maths, Sciences, Hist-Géo, Anglais</p>
         </div>
     """, unsafe_allow_html=True)
     if st.button("🧙‍♀️ Incarner Léa (6ème)", key="btn_hero_lea"):
@@ -366,9 +332,9 @@ with col_avatar2:
     border_style = "avatar-selected" if is_active_lucas else ""
     st.markdown(f"""
         <div class="avatar-card {border_style}">
-            <h2 style="color: #FF9E00 !important; margin-bottom: 5px; font-size: 1.85rem !important; font-weight: 800;">⚡ Lucas — 4ème</h2>
-            <p style="font-size: 1.25rem !important; color: #00FFCC !important; font-weight: bold;">L'Alchimiste & Chasseur d'Ombres</p>
-            <p style="margin: 10px 0; font-size: 1.1rem !important; color: #FFFFFF !important;">🦇 <b>Quête :</b> Le Mystère de la Crypte des Ombres<br>🔬 <b>Matières :</b> 8 Matières de 4ème (Sciences, Techno, Langues...)</p>
+            <h2 style="color: #FF9E00 !important; margin-bottom: 5px; font-size: 2.1rem !important; font-weight: 900 !important;">⚡ Lucas — 4ème</h2>
+            <p style="font-size: 1.3rem !important; color: #00FFCC !important; font-weight: bold;">L'Alchimiste & Chasseur d'Ombres</p>
+            <p style="margin: 10px 0; font-size: 1.15rem !important; color: #FFFFFF !important;">🦇 <b>Quête :</b> Le Mystère de la Crypte des Ombres<br>🔬 <b>Matières :</b> 8 Matières de 4ème (Sciences, Techno, Langues...)</p>
         </div>
     """, unsafe_allow_html=True)
     if st.button("🧛‍♂️ Incarner Lucas (4ème)", key="btn_hero_lucas"):
@@ -389,7 +355,7 @@ def get_shuffled_options(q_id, correct_ans, wrong_list):
 # SECTION POUR LÉA (6ÈME)
 # ==============================================================================
 if st.session_state.selected_hero == "lea":
-    st.header("🔮 Espace Aventure : Léa (6ème)")
+    st.markdown("""<h2 style="font-size: 2.2rem !important; color: #E0AAFF !important;">🔮 Espace Aventure : Léa (6ème)</h2>""", unsafe_allow_html=True)
     
     tab_accueil_journal, tab_aventure, tab_grimoire = st.tabs([
         "📖 Mon Journal de la Quête (Page d'Accueil)",
@@ -411,7 +377,7 @@ if st.session_state.selected_hero == "lea":
             </div>
         """, unsafe_allow_html=True)
         
-        display_pdf_if_exists([["journal", "citrouille"], ["journal", "lea"], ["journal", "6"]], "Le Journal de la Quête - Léa 6ème")
+        display_pdf_download_button([["journal", "citrouille"], ["journal", "lea"], ["journal", "6"]], "Le Journal de la Quête - Léa 6ème")
         
         st.subheader("🗺️ Carte du Manoir & Mots-Pouvoirs Débloqués")
         col_j1, col_j2, col_j3 = st.columns(3)
@@ -449,15 +415,16 @@ if st.session_state.selected_hero == "lea":
     # --- TAB 2 : LA QUÊTE & LES SALLES ---
     with tab_aventure:
         salles_lea = {
-            1: "Jour 1 : La Galerie des Créatures & des Parchemins Hantés",
-            2: "Jour 2 : L'Observatoire de la Pleine Lune & des Étoiles",
-            3: "Jour 3 : Le Labyrinthe des Toiles Géométriques & des Chaudrons",
-            4: "Jour 4 : La Crypte des Anciens Rois & des Hiéroglyphes",
-            5: "Jour 5 : La Salle de la Citrouille d'Émeraude (Rituel Ultime)",
-            6: "Jour 6 : Épilogue & Grand Bal d'Halloween"
+            0: "Jour 0 : 🎬 Lancement & Bande-Annonce du Manoir",
+            1: "Jour 1 : 🖼️ La Galerie des Créatures & des Parchemins Hantés",
+            2: "Jour 2 : 🌕 L'Observatoire de la Pleine Lune & des Étoiles",
+            3: "Jour 3 : 🕸️ Le Labyrinthe des Toiles Géométriques & des Chaudrons",
+            4: "Jour 4 : 🏛️ La Crypte des Anciens Rois & des Hiéroglyphes",
+            5: "Jour 5 : 🎃 La Salle de la Citrouille d'Émeraude (Rituel Ultime)",
+            6: "Jour 6 : 🏆 Le Grand Rituel Récapitulatif & Épilogue"
         }
         
-        j_sel = st.selectbox("Sélectionnez la Salle à Explorer :", list(salles_lea.keys()), format_func=lambda x: salles_lea[x])
+        j_sel = st.selectbox("📍 Sélectionnez la Salle à Explorer :", list(salles_lea.keys()), format_func=lambda x: salles_lea[x])
         
         if j_sel not in st.session_state.unlocked_lea and j_sel > 1:
             st.markdown(f"""
@@ -478,18 +445,27 @@ if st.session_state.selected_hero == "lea":
         else:
             st.markdown(f"### 📍 {salles_lea[j_sel]}")
             
-            if j_sel == 6:
-                display_video_if_exists([["epilogue", "6"], ["victoire", "6"], ["bal", "6"]], "Épilogue : La Victoire Finale")
+            if j_sel == 0:
+                # JOUR 0 : BANDE ANNONCE & LANCEMENT
+                display_video_if_exists([["bande", "annonce"], ["citrouille"], ["6°"], ["6e"]], "Bande-Annonce Général — La Citrouille d'Émeraude")
                 st.markdown("""
-                    <div class="code-box-success">
-                        🎉 <b>VICTOIRE FINALE !</b><br>
-                        Tu as débloqué tous les Mots-Pouvoirs et libéré la Citrouille d'Émeraude !
+                    <div class="journal-card">
+                        <h3 style="color: #FF9E00 !important;">🎃 Bienvenue à l'Académie d'Halloween, Léa !</h3>
+                        <p>Découvre la bande-annonce ci-dessus pour plonger dans l'histoire de la malédiction du Manoir des Sorciers.</p>
+                        <p><b>Comment jouer :</b></p>
+                        <ol>
+                            <li>Sélectionne <b>Jour 1</b> dans le menu déroulant ci-dessus.</li>
+                            <li>Regarde le teaser vidéo de la salle et réponds aux 20 questions de cours.</li>
+                            <li>En obéissant un 20/20, le Maître Sorcier te révélera le <b>Code Secret</b> du jour à noter dans ton Journal.</li>
+                        </ol>
                     </div>
                 """, unsafe_allow_html=True)
             else:
-                display_video_if_exists([["jour 1", "6"], ["galerie", "6"], ["jour 1"], ["jour 2", "6"], ["jour 3", "6"], ["jour 4", "6"], ["jour 5", "6"]], f"Teaser Vidéo - Jour {j_sel}")
+                # TEASER VIDÉO DE LA SALLE
+                if j_sel < 6:
+                    display_video_if_exists([["jour 1", "6"], ["galerie", "6"], ["jour 1"], ["jour 2", "6"], ["jour 3", "6"], ["jour 4", "6"], ["jour 5", "6"]], f"Teaser Vidéo - Jour {j_sel}")
                 
-                st.subheader("🧪 Épreuve du Jour : Les 20 Questions de Cours Scénarisées du Studio")
+                st.subheader(f"🧪 Épreuve du Jour {j_sel} : Les 20 Questions de Cours Scénarisées du Studio")
                 st.caption("Sélectionnez la bonne réponse parmi les 4 propositions mélangées pour chaque question.")
                 
                 # BANQUE DE QUESTIONS DU STUDIO POUR LÉA (6ÈME)
@@ -526,66 +502,84 @@ if st.session_state.selected_hero == "lea":
                         qt, qcorr, qwrongs, qexp = item
                         q_id = f"lea_{j_sel}_{idx}"
                         opts = get_shuffled_options(q_id, qcorr, qwrongs)
-                        chosen = st.radio(f"**{qt}**", opts, key=f"r_{q_id}")
-                        user_ans.append((qt, chosen, qcorr, qexp, q_id))
+                        
+                        st.markdown(f"**{qt}**")
+                        chosen = st.radio(f"Choix pour {q_id}", opts, key=f"r_{q_id}", label_visibility="collapsed")
+                        
+                        # Si soumis précédemment, afficher la correction direct sous la question
+                        if f"submitted_lea_{j_sel}" in st.session_state:
+                            prev_ans = st.session_state[f"ans_lea_{j_sel}_{idx}"]
+                            if prev_ans == qcorr:
+                                st.markdown(f"""
+                                    <div class="correct-card">
+                                        🟩 <b>Réponse : {prev_ans} (Exact !)</b><br>
+                                        💡 <i>Explication : {qexp}</i>
+                                    </div>
+                                """, unsafe_allow_html=True)
+                            else:
+                                st.markdown(f"""
+                                    <div class="wrong-card">
+                                        libre 🟥 <b>Ta réponse : <strike>{prev_ans}</strike> ❌</b><br>
+                                        ✅ Bonne réponse : <b>{qcorr}</b><br>
+                                        💡 <i>Explication : {qexp}</i>
+                                    </div>
+                                """, unsafe_allow_html=True)
+                        st.markdown("---")
+                        user_ans.append((qt, chosen, qcorr, qexp, idx))
                     
                     sub = st.form_submit_button("📜 Valider l'Épreuve au Maître du Manoir")
                 
                 if sub:
-                    score = sum([1 for item in user_ans if item[1] == item[2]])
+                    st.session_state[f"submitted_lea_{j_sel}"] = True
+                    for qt, chosen, qcorr, qexp, idx in user_ans:
+                        st.session_state[f"ans_lea_{j_sel}_{idx}"] = chosen
+                    safe_rerun()
+                
+                if f"submitted_lea_{j_sel}" in st.session_state:
+                    score = sum([1 for item in user_ans if st.session_state.get(f"ans_lea_{j_sel}_{item[4]}") == item[2]])
                     total = len(user_ans)
                     
-                    st.subheader(f"📊 Résultat de l'Épreuve : {score} / {total}")
-                    
-                    for item in user_ans:
-                        qt, u_a, c_a, exp, q_id = item
-                        if u_a == c_a:
-                            st.markdown(f"""
-                                <div class="correct-card">
-                                    🟩 <b>{qt}</b><br>
-                                    Ta réponse : <i>{u_a}</i> (Exact !)<br>
-                                    💡 <i>Explication : {exp}</i>
-                                </div>
-                            """, unsafe_allow_html=True)
-                        else:
-                            st.markdown(f"""
-                                <div class="wrong-card">
-                                    libre 🟥 <b>{qt}</b><br>
-                                    Ta réponse : <strike>{u_a}</strike> ❌<br>
-                                    ✅ Bonne réponse : <b>{c_a}</b><br>
-                                    💡 <i>Explication : {exp}</i>
-                                </div>
-                            """, unsafe_allow_html=True)
+                    st.subheader(f"📊 Résultat de l'Épreuve du Jour {j_sel} : {score} / {total}")
                     
                     if score == total:
                         st.session_state.unlocked_lea.add(j_sel + 1)
-                        st.markdown(f"""
-                            <div class="code-box-success">
-                                🏆 <b>SCORE PARFAIT ATTEINT : 20 / 20 !</b><br><br>
-                                🌟 <b>CODE SECRET DU JOUR {j_sel} :</b><br>
-                                <span style="font-size:32px; color:#FF9E00; font-weight:bold;">{CODES_LEA[j_sel]}</span><br><br>
-                                📝 Note ce code dans ton Journal de la Quête pour déverrouiller le Jour {j_sel+1} !
-                            </div>
-                        """, unsafe_allow_html=True)
+                        if j_sel < 6:
+                            st.markdown(f"""
+                                <div class="code-box-success">
+                                    🏆 <b>SCORE PARFAIT ATTEINT : 20 / 20 !</b><br><br>
+                                    🌟 <b>CODE SECRET DU JOUR {j_sel} :</b><br>
+                                    <span style="font-size:32px; color:#FF9E00; font-weight:bold;">{CODES_LEA[j_sel]}</span><br><br>
+                                    📝 Note ce code dans ton Journal de la Quête pour déverrouiller le Jour {j_sel+1} !
+                                </div>
+                            """, unsafe_allow_html=True)
+                        else:
+                            # JOUR 6 : AFFICHER LA VIDÉO ÉPILOGUE APRÈS LA RÉUSSITE DU QUIZ
+                            st.markdown("""
+                                <div class="code-box-success">
+                                    🎉 <b>GRAND RITUEL RÉUSSI : 20 / 20 !</b><br>
+                                    La malédiction du Manoir est levée ! Regarde l'Épilogue ci-dessous pour célébrer la Victoire !
+                                </div>
+                            """, unsafe_allow_html=True)
+                            display_video_if_exists([["epilogue", "6"], ["victoire", "6"], ["bal", "6"]], "Épilogue : La Victoire Finale")
                     else:
                         st.markdown(f"""
                             <div class="warning-box">
                                 🔒 <b>SCORE : {score} / {total}. LE CODE RESTE SCELLÉ !</b><br>
-                                Tu as fait {total - score} erreur(s). Seul un sans-faute de 20/20 révèle le Code Secret !<br>
+                                Tu as fait {total - score} erreur(s). Seul un sans-faute de 20/20 révèle le Code Secret / l'Épilogue !<br>
                                 Consulte l'onglet <b>Le Grimoire du Savoir</b> pour réviser puis retente ta chance !
                             </div>
                         """, unsafe_allow_html=True)
 
     # --- TAB 3 : LE GRIMOIRE DU SAVOIR ---
     with tab_grimoire:
-        st.subheader("📚 Le Grimoire du Savoir — Fiches de Révision 6ème")
-        display_pdf_if_exists([["grimoire", "lea"], ["grimoire", "6"], ["grimoire", "savoir"]], "Le Grimoire du Savoir - Léa 6ème")
+        st.subheader("📚 Le Grimoire du Savoir — Manuel de Révision Complet (6ème)")
+        display_pdf_download_button([["grimoire", "lea"], ["grimoire", "6"], ["grimoire", "savoir"]], "Le Grimoire du Savoir - Léa 6ème")
 
 # ==============================================================================
 # SECTION POUR LUCAS (4ÈME)
 # ==============================================================================
 else:
-    st.header("⚡ Espace Aventure : Lucas (4ème)")
+    st.markdown("""<h2 style="font-size: 2.2rem !important; color: #E0AAFF !important;">⚡ Espace Aventure : Lucas (4ème)</h2>""", unsafe_allow_html=True)
     
     tab_accueil_journal_l, tab_aventure_l, tab_grimoire_l = st.tabs([
         "📖 Mon Journal de la Quête (Page d'Accueil)",
@@ -607,7 +601,7 @@ else:
             </div>
         """, unsafe_allow_html=True)
         
-        display_pdf_if_exists([["journal", "crypte"], ["journal", "lucas"], ["journal", "4"]], "Le Journal de la Quête - Lucas 4ème")
+        display_pdf_download_button([["journal", "crypte"], ["journal", "lucas"], ["journal", "4"]], "Le Journal de la Quête - Lucas 4ème")
         
         st.subheader("🗺️ Carte de la Crypte & Codes Secrets Débloqués")
         col_l1, col_l2, col_l3 = st.columns(3)
@@ -629,7 +623,7 @@ else:
                     st.markdown(f"""
                         <div style="background-color: #1B4D3E; border: 2px solid #00FFCC; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 15px;">
                             <h4 style="color: #00FFCC !important;">{name}</h4>
-                            <p style="color: #FFFFFF !important; font-weight: bold; font-size: 1.1rem;">Code : {code if j_num < 6 else '🏆 DÉBLOQUED !'}</p>
+                            <p style="color: #FFFFFF !important; font-weight: bold; font-size: 1.1rem;">Code : {code if j_num < 6 else '🏆 DÉBLOQUÉ !'}</p>
                             <span style="color: #00FFCC;">✨ Passage Ouvert</span>
                         </div>
                     """, unsafe_allow_html=True)
@@ -645,15 +639,16 @@ else:
     # --- TAB 2 : LA QUÊTE & LES SALLES ---
     with tab_aventure_l:
         salles_lucas = {
-            1: "Jour 1 : Le Laboratoire Maudit",
-            2: "Jour 2 : La Bibliothèque des Ombres",
-            3: "Jour 3 : La Salle des Engrenages",
-            4: "Jour 4 : Le Tombeau des Rois",
-            5: "Jour 5 : Le Portail du Cauchemar",
-            6: "Jour 6 : Épilogue & Fermeture de la Faille"
+            0: "Jour 0 : 🎬 Lancement & Bande-Annonce de la Crypte",
+            1: "Jour 1 : 🧪 Le Laboratoire Maudit",
+            2: "Jour 2 : 📖 La Bibliothèque des Ombres",
+            3: "Jour 3 : ⚙️ La Salle des Engrenages",
+            4: "Jour 4 : 👑 Le Tombeau des Rois",
+            5: "Jour 5 : 🌌 Le Portail du Cauchemar",
+            6: "Jour 6 : 🏆 Le Verrou du Maître & Épilogue"
         }
         
-        j_sel = st.selectbox("Sélectionnez la Salle à Explorer :", list(salles_lucas.keys()), format_func=lambda x: salles_lucas[x])
+        j_sel = st.selectbox("📍 Sélectionnez la Salle à Explorer :", list(salles_lucas.keys()), format_func=lambda x: salles_lucas[x])
         
         if j_sel not in st.session_state.unlocked_lucas and j_sel > 1:
             st.markdown(f"""
@@ -674,18 +669,27 @@ else:
         else:
             st.markdown(f"### 📍 {salles_lucas[j_sel]}")
             
-            if j_sel == 6:
-                display_video_if_exists([["epilogue", "4"], ["victoire", "4"]], "Épilogue : La Victoire sur la Crypte")
+            if j_sel == 0:
+                # JOUR 0 : BANDE ANNONCE & LANCEMENT
+                display_video_if_exists([["bande", "annonce"], ["crypte"], ["4°"], ["4e"]], "Bande-Annonce Général — La Crypte des Ombres")
                 st.markdown("""
-                    <div class="code-box-success">
-                        🎉 <b>TRIOMPHE ÉPIQUE !</b><br>
-                        Tu as scellé le Portail du Cauchemar et sauvé la Crypte des Ombres !
+                    <div class="journal-card">
+                        <h3 style="color: #FF9E00 !important;">🦇 Bienvenue dans la Crypte des Ombres, Lucas !</h3>
+                        <p>Visionne la bande-annonce ci-dessus pour découvrir la menace qui pèse sur l'école.</p>
+                        <p><b>Comment jouer :</b></p>
+                        <ol>
+                            <li>Sélectionne <b>Jour 1</b> dans le menu déroulant ci-dessus.</li>
+                            <li>Regarde le teaser de la salle et résous les 20 épreuves multi-matières.</li>
+                            <li>En réalisant un 20/20, l'esprit de la crypte te révélera le <b>Code Secret</b> requis pour avancer.</li>
+                        </ol>
                     </div>
                 """, unsafe_allow_html=True)
             else:
-                display_video_if_exists([["jour 1", "4"], ["labo", "4"], ["jour 1"], ["jour 2", "4"], ["jour 3", "4"], ["jour 4", "4"], ["jour 5", "4"]], f"Teaser Vidéo - Jour {j_sel}")
+                # TEASER VIDÉO DE LA SALLE
+                if j_sel < 6:
+                    display_video_if_exists([["jour 1", "4"], ["labo", "4"], ["jour 1"], ["jour 2", "4"], ["jour 3", "4"], ["jour 4", "4"], ["jour 5", "4"]], f"Teaser Vidéo - Jour {j_sel}")
                 
-                st.subheader("🧪 Épreuve du Jour : Les 20 Questions Multi-Matières Scénarisées du Studio")
+                st.subheader(f"🧪 Épreuve du Jour {j_sel} : Les 20 Questions Multi-Matières Scénarisées du Studio")
                 st.caption("Sélectionnez la bonne réponse parmi les 4 propositions mélangées pour chaque question.")
                 
                 q_raw_lucas = {
@@ -721,57 +725,75 @@ else:
                         qt, qcorr, qwrongs, qexp = item
                         q_id = f"lucas_{j_sel}_{idx}"
                         opts = get_shuffled_options(q_id, qcorr, qwrongs)
-                        chosen = st.radio(f"**{qt}**", opts, key=f"r_{q_id}")
-                        user_ans_l.append((qt, chosen, qcorr, qexp, q_id))
+                        
+                        st.markdown(f"**{qt}**")
+                        chosen = st.radio(f"Choix pour {q_id}", opts, key=f"r_{q_id}", label_visibility="collapsed")
+                        
+                        # Si soumis précédemment, afficher la correction direct sous la question
+                        if f"submitted_lucas_{j_sel}" in st.session_state:
+                            prev_ans = st.session_state[f"ans_lucas_{j_sel}_{idx}"]
+                            if prev_ans == qcorr:
+                                st.markdown(f"""
+                                    <div class="correct-card">
+                                        🟩 <b>Réponse : {prev_ans} (Exact !)</b><br>
+                                        💡 <i>Explication : {qexp}</i>
+                                    </div>
+                                """, unsafe_allow_html=True)
+                            else:
+                                st.markdown(f"""
+                                    <div class="wrong-card">
+                                        libre 🟥 <b>Ta réponse : <strike>{prev_ans}</strike> ❌</b><br>
+                                        ✅ Bonne réponse : <b>{qcorr}</b><br>
+                                        💡 <i>Explication : {qexp}</i>
+                                    </div>
+                                """, unsafe_allow_html=True)
+                        st.markdown("---")
+                        user_ans_l.append((qt, chosen, qcorr, qexp, idx))
                     
                     sub_l = st.form_submit_button("⚡ Activer l'Autel d'Évasion")
                 
                 if sub_l:
-                    score_l = sum([1 for item in user_ans_l if item[1] == item[2]])
+                    st.session_state[f"submitted_lucas_{j_sel}"] = True
+                    for qt, chosen, qcorr, qexp, idx in user_ans_l:
+                        st.session_state[f"ans_lucas_{j_sel}_{idx}"] = chosen
+                    safe_rerun()
+                
+                if f"submitted_lucas_{j_sel}" in st.session_state:
+                    score_l = sum([1 for item in user_ans_l if st.session_state.get(f"ans_lucas_{j_sel}_{item[4]}") == item[2]])
                     total_l = len(user_ans_l)
                     
-                    st.subheader(f"📊 Résultat de l'Épreuve : {score_l} / {total_l}")
-                    
-                    for item in user_ans_l:
-                        qt, u_a, c_a, exp, q_id = item
-                        if u_a == c_a:
-                            st.markdown(f"""
-                                <div class="correct-card">
-                                    🟩 <b>{qt}</b><br>
-                                    Ta réponse : <i>{u_a}</i> (Exact !)<br>
-                                    💡 <i>Explication : {exp}</i>
-                                </div>
-                            """, unsafe_allow_html=True)
-                        else:
-                            st.markdown(f"""
-                                <div class="wrong-card">
-                                    libre 🟥 <b>{qt}</b><br>
-                                    Ta réponse : <strike>{u_a}</strike> ❌<br>
-                                    ✅ Bonne réponse : <b>{c_a}</b><br>
-                                    💡 <i>Explication : {exp}</i>
-                                </div>
-                            """, unsafe_allow_html=True)
+                    st.subheader(f"📊 Résultat de l'Épreuve du Jour {j_sel} : {score_l} / {total_l}")
                     
                     if score_l == total_l:
                         st.session_state.unlocked_lucas.add(j_sel + 1)
-                        st.markdown(f"""
-                            <div class="code-box-success">
-                                🏆 <b>SCORE PARFAIT ATTEINT : 20 / 20 !</b><br><br>
-                                ⚡ <b>CODE SECRET DU JOUR {j_sel} :</b><br>
-                                <span style="font-size:32px; color:#FF9E00; font-weight:bold;">{CODES_LUCAS[j_sel]}</span><br><br>
-                                📝 Note ce code dans ton Journal de la Quête pour déverrouiller le Jour {j_sel+1} !
-                            </div>
-                        """, unsafe_allow_html=True)
+                        if j_sel < 6:
+                            st.markdown(f"""
+                                <div class="code-box-success">
+                                    🏆 <b>SCORE PARFAIT ATTEINT : 20 / 20 !</b><br><br>
+                                    ⚡ <b>CODE SECRET DU JOUR {j_sel} :</b><br>
+                                    <span style="font-size:32px; color:#FF9E00; font-weight:bold;">{CODES_LUCAS[j_sel]}</span><br><br>
+                                    📝 Note ce code dans ton Journal de la Quête pour déverrouiller le Jour {j_sel+1} !
+                                </div>
+                            """, unsafe_allow_html=True)
+                        else:
+                            # JOUR 6 : AFFICHER LA VIDÉO ÉPILOGUE APRÈS LA RÉUSSITE DU QUIZ
+                            st.markdown("""
+                                <div class="code-box-success">
+                                    🎉 <b>VERROU DU MAÎTRE BRISÉ : 20 / 20 !</b><br>
+                                    Le Portail du Cauchemar est scellé ! Regarde l'Épilogue ci-dessous pour fêter la Victoire !
+                                </div>
+                            """, unsafe_allow_html=True)
+                            display_video_if_exists([["epilogue", "4"], ["victoire", "4"]], "Épilogue : La Victoire sur la Crypte")
                     else:
                         st.markdown(f"""
                             <div class="warning-box">
                                 🔒 <b>SCORE : {score_l} / {total_l}. LE CODE RESTE SCELLÉ !</b><br>
-                                Tu as fait {total_l - score_l} erreur(s). Seul un 20/20 révèle le Code Secret !<br>
+                                Tu as fait {total_l - score_l} erreur(s). Seul un sans-faute de 20/20 révèle le Code Secret / l'Épilogue !<br>
                                 Consulte l'onglet <b>Le Grimoire des Sortilèges</b> pour réviser puis retente ta chance !
                             </div>
                         """, unsafe_allow_html=True)
 
     # --- TAB 3 : LE GRIMOIRE DES SORTILÈGES ---
     with tab_grimoire_l:
-        st.subheader("📖 Le Grimoire des Sortilèges — Fiches de Révision 4ème")
-        display_pdf_if_exists([["grimoire", "lucas"], ["grimoire", "4"], ["grimoire", "sortilege"]], "Le Grimoire des Sortilèges - Lucas 4ème")
+        st.subheader("📖 Le Grimoire des Sortilèges — Manuel de Révision Complet (4ème)")
+        display_pdf_download_button([["grimoire", "lucas"], ["grimoire", "4"], ["grimoire", "sortilege"]], "Le Grimoire des Sortilèges - Lucas 4ème")
