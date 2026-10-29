@@ -20,14 +20,15 @@ def norm_text(text):
         return ""
     return ''.join(c for c in unicodedata.normalize('NFD', str(text).lower()) if unicodedata.category(c) != 'Mn')
 
-# --- STYLES CSS PERSONNALISÉS ---
+# --- STYLES CSS PERSONNALISÉS (LUMINEUX, HALLOWEEN, DROPDOWN CORRIGÉ, AVATARS AGGRANDIS) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400&display=swap');
 
     /* Typographie globale */
-    html, body, [class*="css"], label, input, textarea {
+    html, body, [class*="css"], div, span, p, label, input, textarea {
         font-family: 'Andika', sans-serif !important;
+        font-size: 16px !important;
         line-height: 1.6 !important;
         color: #FFFFFF !important;
     }
@@ -70,48 +71,47 @@ st.markdown("""
         text-shadow: 2px 2px 4px #000000 !important;
     }
 
-    /* CARTES DES AVATARS (LÉA & LUCAS) EN ÉNORMES */
+    /* CARTES AVATARS LUDIQUES : FORÇAGE DES TAILLES DE POLICES (AGGRANDIES À 100%) */
     .avatar-card {
         background: linear-gradient(145deg, #4A246B 0%, #361852 100%) !important;
         border: 3px solid #E0AAFF !important;
         border-radius: 20px !important;
-        padding: 28px !important;
+        padding: 26px !important;
         text-align: center !important;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6) !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7) !important;
         transition: transform 0.2s !important;
-        margin-bottom: 15px !important;
     }
-    
-    .avatar-card .avatar-title {
+
+    .avatar-card h2, .avatar-card h2 * {
         font-size: 2.5rem !important;
         font-weight: 900 !important;
         color: #FF9E00 !important;
-        margin-bottom: 8px !important;
+        margin-bottom: 10px !important;
         text-shadow: 2px 2px 5px #000000 !important;
     }
 
-    .avatar-card .avatar-role {
+    .avatar-card .avatar-role, .avatar-card .avatar-role * {
         font-size: 1.5rem !important;
         color: #00FFCC !important;
         font-weight: 900 !important;
-        margin-bottom: 12px !important;
+        margin-bottom: 14px !important;
+        text-shadow: 1px 1px 3px #000000 !important;
     }
 
-    .avatar-card .avatar-desc {
+    .avatar-card .avatar-desc, .avatar-card .avatar-desc *, .avatar-card p, .avatar-card div {
         font-size: 1.25rem !important;
         color: #FFFFFF !important;
         line-height: 1.8 !important;
-        margin: 10px 0 !important;
     }
 
     .avatar-card:hover {
         border-color: #FF9E00 !important;
         transform: translateY(-4px) !important;
     }
-
+    
     .avatar-selected {
         border: 4px solid #00FFCC !important;
-        box-shadow: 0 0 30px rgba(0, 255, 204, 0.6) !important;
+        box-shadow: 0 0 35px rgba(0, 255, 204, 0.7) !important;
     }
 
     /* FORÇAGE DU TEXTE NOIR SUR TOUS LES BOUTONS CLIQUABLES */
@@ -151,12 +151,12 @@ st.markdown("""
         color: #000000 !important;
     }
 
-    /* LISTE DÉROULANTE (SELECTBOX) */
+    /* LISTE DÉROULANTE (SELECTBOX) - STYLE LIBELLÉ, CHAMP & DROPDOWN LISIBLES À 100% */
     div[data-testid="stWidgetLabel"] *, 
     .stSelectbox label, 
     .stSelectbox label * {
         color: #E0AAFF !important;
-        font-size: 1.35rem !important;
+        font-size: 1.4rem !important;
         font-weight: 900 !important;
         text-shadow: 1px 1px 3px #000000 !important;
     }
@@ -174,7 +174,7 @@ st.markdown("""
     .stSelectbox span {
         color: #000000 !important;
         font-weight: 900 !important;
-        font-size: 1.15rem !important;
+        font-size: 1.2rem !important;
     }
 
     /* MENU POPUP QUI S'OUVRE AU CLIC (BASEWEB POPOVER) */
@@ -204,7 +204,7 @@ st.markdown("""
         color: #000000 !important;
     }
 
-    /* TEXTE BLANC DANS LES CARTES DU JOURNAL & NOTIONS */
+    /* TEXTE BLANC DANS LES CARTES DU JOURNAL */
     .journal-card, .journal-card *, 
     .grimoire-card, .grimoire-card *, 
     .warning-box, .warning-box *, 
@@ -223,6 +223,7 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
     }
 
+    /* Boîtes de Messages & Alertes */
     .code-box-success {
         background: linear-gradient(135deg, #1C3B2B 0%, #124D36 100%) !important;
         border: 3px solid #00FFCC !important;
@@ -266,7 +267,7 @@ st.markdown("""
     }
     
     div[role="radiogroup"] label * {
-        font-size: 1.15rem !important;
+        font-size: 1.2rem !important;
     }
 
     div[role="radiogroup"] label:hover {
@@ -302,8 +303,8 @@ def safe_rerun():
     elif hasattr(st, "experimental_rerun"):
         st.experimental_rerun()
 
-# --- RECHERCHE ET AFFICHAGE DES MÉDIAS ---
-def find_media_file_multi(keyword_groups, extension=".mp4", target_hero="lea"):
+# --- RECHERCHE ET AFFICHAGE DES MÉDIAS (VIDÉOS & IMAGES DE LISEUSE) ---
+def find_media_file_multi(keyword_groups, extension=".mp4", target_hero=""):
     try:
         files = os.listdir(".")
         valid_files = []
@@ -312,25 +313,24 @@ def find_media_file_multi(keyword_groups, extension=".mp4", target_hero="lea"):
             if ext.lower() == extension.lower():
                 f_norm = norm_text(f_base)
                 
-                # Anti-croisement héro :
-                other_hero = "lucas" if target_hero == "lea" else "lea"
-                other_grade = "4" if target_hero == "lea" else "6"
-                
-                # Si le fichier contient d'autres marques exclusives du mauvais héros, on l'ignore
-                if (other_hero in f_norm or f"{other_grade}°" in f_norm) and not (target_hero in f_norm or f"{'6' if target_hero=='lea' else '4'}°" in f_norm):
+                # Isolation par héros
+                if target_hero == "lea" and "lucas" in f_norm:
                     continue
-                valid_files.append((f, f_norm))
-                
-        for group in keyword_groups:
-            for f, f_norm in valid_files:
-                if all(norm_text(kw) in f_norm for kw in group):
-                    return f
+                if target_hero == "lucas" and "lea" in f_norm:
+                    continue
+                    
+                for group in keyword_groups:
+                    if all(norm_text(kw) in f_norm for kw in group):
+                        valid_files.append(f)
+                        break
+        if valid_files:
+            return valid_files[0]
     except Exception:
         pass
     return None
 
-def display_video_if_exists(keyword_groups, fallback_title, target_hero="lea"):
-    video_file = find_media_file_multi(keyword_groups, ".mp4", target_hero=target_hero)
+def display_video_if_exists(keyword_groups, fallback_title, target_hero=""):
+    video_file = find_media_file_multi(keyword_groups, ".mp4", target_hero)
     if video_file:
         st.video(video_file)
     else:
@@ -343,22 +343,22 @@ def find_image_pages(keyword_groups, doc_key):
         valid_exts = {'.png', '.jpg', '.jpeg', '.webp'}
         
         target_hero = "lea" if "lea" in doc_key.lower() else "lucas" if "lucas" in doc_key.lower() else ""
-        other_hero = "lucas" if target_hero == "lea" else "lea" if target_hero == "lucas" else ""
         
         for f in files:
             f_base, ext = os.path.splitext(f)
             if ext.lower() in valid_exts:
                 f_norm = norm_text(f_base)
                 
-                # Rejet absolu des images de l'autre héros
-                if other_hero and other_hero in f_norm and target_hero not in f_norm:
+                # Sécurité anti-croisement
+                if target_hero == "lea" and "lucas" in f_norm:
+                    continue
+                if target_hero == "lucas" and "lea" in f_norm:
                     continue
                     
                 for group in keyword_groups:
                     if all(norm_text(kw) in f_norm for kw in group):
                         matching_images.append(f)
                         break
-                        
         if matching_images:
             def natural_sort_key(s):
                 return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s)]
@@ -408,8 +408,8 @@ def display_document_if_exists(keyword_groups, title, doc_key):
                         safe_rerun()
         return True
 
-    target_hero = "lea" if "lea" in doc_key.lower() else "lucas"
-    pdf_file = find_media_file_multi(keyword_groups, ".pdf", target_hero=target_hero)
+    target_hero = "lea" if "lea" in doc_key.lower() else "lucas" if "lucas" in doc_key.lower() else ""
+    pdf_file = find_media_file_multi(keyword_groups, ".pdf", target_hero)
     if pdf_file:
         st.markdown(f"""
             <div class="journal-card" style="text-align: center; border: 3px solid #00FFCC !important;">
@@ -458,7 +458,7 @@ with col_avatar1:
     border_style = "avatar-selected" if is_active_lea else ""
     st.markdown(f"""
         <div class="avatar-card {border_style}">
-            <div class="avatar-title">🔮 Léa — 6ème</div>
+            <h2>🔮 Léa — 6ème</h2>
             <div class="avatar-role">L'Apprentie Sorcière du Manoir</div>
             <div class="avatar-desc">
                 🏰 <b>Quête :</b> La Malédiction de la Citrouille d'Émeraude<br>
@@ -475,7 +475,7 @@ with col_avatar2:
     border_style = "avatar-selected" if is_active_lucas else ""
     st.markdown(f"""
         <div class="avatar-card {border_style}">
-            <div class="avatar-title">⚡ Lucas — 4ème</div>
+            <h2>⚡ Lucas — 4ème</h2>
             <div class="avatar-role">L'Alchimiste & Chasseur d'Ombres</div>
             <div class="avatar-desc">
                 🦇 <b>Quête :</b> Le Mystère de la Crypte des Ombres<br>
@@ -523,7 +523,7 @@ if st.session_state.selected_hero == "lea":
             </div>
         """, unsafe_allow_html=True)
         
-        display_document_if_exists([["journal", "citrouille"], ["journal", "lea"], ["journal", "6"]], "Le Journal de la Quête - Léa 6ème", "journal_lea")
+        display_document_if_exists([["journal_lea"], ["journal", "lea"], ["citrouille"]], "Le Journal de la Quête - Léa 6ème", "journal_lea")
         
         st.subheader("🗺️ Carte du Manoir & Mots-Pouvoirs Débloqués")
         col_j1, col_j2, col_j3 = st.columns(3)
@@ -574,7 +574,7 @@ if st.session_state.selected_hero == "lea":
         
         if j_sel == 0:
             st.markdown("### 📍 Jour 0 : Lancement de l'Aventure & Bande-Annonce")
-            display_video_if_exists([["bande-annonce", "6"], ["citrouille"], ["trailer", "6"], ["j0"]], "Bande-Annonce - La Citrouille d'Émeraude", target_hero="lea")
+            display_video_if_exists([["bande-annonce"], ["citrouille"], ["trailer"], ["j0"], ["jour 0"], ["0"]], "Bande-Annonce - La Citrouille d'Émeraude", "lea")
             st.markdown("""
                 <div class="journal-card">
                     <h3 style="color: #FF9E00 !important;">📜 Bienvenue à l'Académie de Sorcellerie d'Halloween !</h3>
@@ -607,63 +607,129 @@ if st.session_state.selected_hero == "lea":
                 st.subheader("🧪 Épreuve Finale du Jour 6 : Le Quiz Récapitulatif du Grand Bal")
                 st.caption("Validez vos 20 réponses pour déclencher la vidéo d'Épilogue et la Victoire Finale !")
             else:
-                kw_vid = [f"jour {j_sel}", "6"] if j_sel > 0 else ["bande-annonce"]
-                display_video_if_exists([[f"jour {j_sel}", "6"], [f"j{j_sel}", "6"], [f"jour {j_sel}"]], f"Teaser Vidéo - Jour {j_sel}", target_hero="lea")
+                display_video_if_exists([[f"jour {j_sel}"], [f"j{j_sel}"], [f"jour_{j_sel}"], [f"j_{j_sel}"]], f"Teaser Vidéo - Jour {j_sel}", "lea")
                 st.subheader("🧪 Épreuve du Jour : Les 20 Questions de Cours Scénarisées du Studio")
                 st.caption("Sélectionnez la bonne réponse parmi les 4 propositions mélangées pour chaque question.")
             
+            # QUIZ SCÉNARISÉS LÉA (6ÈME) PAR JOUR
             q_raw_lea = {
                 1: [
-                    ("En franchissant le seuil de la Galerie des Créatures, Léa aperçoit une statue de pierre aux ailes d'aigle et au corps de lion. Quel terme issu des récits merveilleux qualifie une créature composée d'éléments empruntés à différentes espèces ?", "Une créature hybride", ["Une créature réelle", "Un animal domestique", "Une créature fossile"], "Une créature hybride associe des éléments de plusieurs espèces d'animaux."),
-                    ("Pour déverrouiller le premier coffre hanté de la galerie, Léa doit classer les longueurs de trois parchemins : 12,4 cm, 12,05 cm et 12,35 cm. Quel est l'ordre croissant correct de ces longueurs ?", "12,05 cm < 12,35 cm < 12,4 cm", ["12,4 cm < 12,35 cm < 12,05 cm", "12,35 cm < 12,05 cm < 12,4 cm", "12,05 cm < 12,4 cm < 12,35 cm"], "En comparant les chiffres des dixièmes et centièmes : 12,05 < 12,35 < 12,40."),
-                    ("Une inscription gravée en anglais sur le mur de la galerie indique : « If you don't understand the gargoyle's clue, you should ask... ». Quelle phrase d'anglais de classe Léa doit-elle utiliser pour demander de l'aide poliment ?", "Can you help me please?", ["Where is the room?", "Thank you very much", "Nice to meet you"], "La formule anglaise de politesse pour demander de l'aide est 'Can you help me please?'."),
-                    ("Une statue de la galerie représente une araignée géante aux côtés de chauves-souris. D'après la classification scientifique des animaux, quel critère permet d'affirmer que l'araignée appartient au groupe des arachnides et non à celui des insectes ?", "Elle possède 8 pattes (4 paires) et n'a pas d'antennes", ["Elle a 6 pattes et des ailes", "Elle a un squelette interne", "Elle a 10 pattes"], "Les arachnides ont 8 pattes et pas d'antennes, contrairement aux insectes (6 pattes et 2 antennes)."),
-                    ("Sur un bas-relief antique de la galerie, Léa déchiffre des symboles gravés en forme de clous et de coins remontant au IIIe millénaire av. J.-C. Quel nom porte cette première écriture née en Mésopotamie ?", "L'écriture cunéiforme", ["Les hiéroglyphes", "L'alphabet grec", "L'écriture cursive"], "L'écriture cunéiforme (en forme de coins) est née vers 3500 av. J.-C. en Mésopotamie."),
-                    ("Léa consulte le lexique des émotions de la peur pour analyser les réactions suscitées par les monstres de la galerie. Quel terme désigne un sentiment de terreur extrême face à un danger ?", "L'épouvante", ["La joie", "La sérénité", "L'indifférence"], "L'épouvante est un sentiment de terreur intense provoqué par le danger ou l'horreur."),
-                    ("La dalle carrée sur laquelle repose la gargouille gardienne mesure 1,5 m de côté. Le périmètre de cette dalle carrée est égal à :", "6 m", ["2,25 m", "4,5 m", "3 m"], "Le périmètre d'un carré est égal à 4 × côté = 4 × 1,5 m = 6 m."),
-                    ("Une fresque lumineuse représente le mouvement de la Terre autour du Soleil. Comment appelle-t-on ce mouvement orbital complet et quelle est sa durée environ ?", "La révolution, qui dure environ 365,25 jours (1 an)", ["La rotation de 24 heures", "L'éclipse de 28 jours", "La dérive des continents"], "Le mouvement de la Terre autour du Soleil s'appelle la révolution et dure 365,25 jours."),
-                    ("Pour dessiner le plan d'évasion de la galerie, une consigne en anglais indique : « Use a glue stick and a pencil ». De quelles fournitures Léa doit-elle se munir ?", "Un bâton de colle et un crayon à papier", ["Une règle et des ciseaux", "Une trousse et une gomme", "Un cahier et un stylo"], "'A glue stick' = un bâton de colle, 'a pencil' = un crayon à papier."),
-                    ("Dans le conte hanté écrit sur une stèle, le récit commence par une vie paisible au royaume, interrompue par l'arrivée soudaine d'un dragon maléfique. Quelle étape du schéma narratif cette arrivée représente-t-elle ?", "L'élément perturbateur", ["La situation initiale", "Les péripéties", "Le dénouement"], "L'élément perturbateur déclenche les aventures du récit en rompant la situation initiale."),
-                    ("Léa possède 20 pièces magiques. Elle dépense 7,80 pièces pour acheter une potion d'invisibilité dans la galerie. Combien lui reste-t-il exactement ?", "12,20 pièces", ["12,80 pièces", "13,20 pièces", "11,80 pièces"], "20 - 7,80 = 12,20 pièces."),
-                    ("Une grande peinture murale montre des hommes préhistoriques pratiquant la culture du blé, l'élevage des moutons et vivant dans des villages fixes. À quelle période cette révolution correspond-elle ?", "Le Néolithique", ["Le Paléolithique", "Le Moyen Âge", "L'Antiquité"], "Le Néolithique marque le passage de la vie nomade à la sédentarité et l'agriculture."),
-                    ("Pour réussir l'épreuve de sciences de la galerie, Léa doit trier les éléments vivants. Quelles caractéristiques biologiques sont partagées par TOUS les êtres vivants ?", "Ils naissent, se nourrissent, grandissent et se reproduisent", ["Ils ont des plumes et volent", "Ils vivent tous sous l'eau", "Ils fabriquent tous du miel"], "Tous les êtres vivants naissent, se nourrissent, grandissent, se reproduisent et meurent."),
-                    ("Dans la phrase d'avertissement : « La gargouille attentive observe la jeune sorcière », quelle est la classe grammaticale du mot « attentive » ?", "Un adjectif qualificatif", ["Un nom commun", "Un verbe à l'infinitif", "Un adverbe"], "'Attentive' est un adjectif qualificatif qui précise le nom 'gargouille'."),
-                    ("Un manuscrit en anglais demande à Léa d'épeler le mot « H-A-L-F-W-A-Y ». Que signifie le verbe anglais « to spell » et quelle est la traduction de « halfway » ?", "'To spell' signifie épeler et 'halfway' signifie à mi-chemin", ["'To spell' signifie écrire et 'halfway' signifie demain", "'To spell' signifie dessiner et 'halfway' signifie le château", "'To spell' signifie compter et 'halfway' signifie en haut"], "'To spell' = épeler (nommer les lettres) ; 'halfway' = à mi-chemin."),
-                    ("Un grimoire ancien posé sur un lutrin compte 24 formules magiques. Léa découvre que 3/4 de ces formules sont des sorts de protection. Combien de sorts de protection le grimoire contient-il ?", "18 sorts de protection", ["12 sorts", "20 sorts", "16 sorts"], "(24 ÷ 4) × 3 = 6 × 3 = 18 sorts."),
-                    ("En lisant la charte d'honneur des sorciers du collège, Léa apprend qu'il faut écouter la parole de ses camarades et respecter le matériel. Quel est l'objectif majeur de ces règles de vie collective ?", "Garantir le vivre-ensemble et le respect de chacun", ["Punir les élèves désobéissants", "Donner plus de devoirs", "Sélectionner les meilleurs élèves"], "L'EMC enseigne que les règles collectives garantissent le vivre-ensemble et le respect."),
-                    ("La Terre effectue une rotation complète sur son propre axe en environ :", "24 heures (provoquant l'alternance jour/nuit)", ["365,25 jours", "12 heures", "28 jours"], "La rotation de la Terre sur son axe dure 24h et produit l'alternance du jour et de la nuit."),
-                    ("Pour interroger le spectre gardien de la galerie sur son âge, quelle question en anglais Léa doit-elle formuler ?", "How old are you?", ["What is your age?", "How are you?", "Where are you from?"], "La tournure exacte pour demander l'âge est 'How old are you?'."),
-                    ("Quelle condition est considérée par les scientifiques comme indispensable pour qu'une planète puisse abriter la vie ?", "La présence d'eau à l'état liquide", ["Un sol composé uniquement de roche", "L'absence totale d'atmosphère", "Une température constante de 100°C"], "L'eau liquide est le milieu biologique indispensable au déroulement des réactions de la vie.")
+                    ("En franchissant le seuil de la Galerie des Créatures, Léa aperçoit une statue de pierre aux ailes d'aigle et au corps de lion. Quel terme issu des récits merveilleux qualifie une créature composée d'éléments empruntés à différentes espèces ?", "Une créature hybride", ["Une créature réelle", "Un animal domestique", "Une créature fossile"], "Une créature hybride associe des éléments de plusieurs animaux."),
+                    ("Pour déverrouiller le premier coffre hanté de la galerie, Léa doit classer les longueurs de trois parchemins : 12,4 cm, 12,05 cm et 12,35 cm. Quel est l'ordre croissant correct de ces longueurs ?", "12,05 cm < 12,35 cm < 12,4 cm", ["12,4 cm < 12,35 cm < 12,05 cm", "12,35 cm < 12,05 cm < 12,4 cm", "12,05 cm < 12,4 cm < 12,35 cm"], "En comparant les dixièmes et centièmes : 12,05 < 12,35 < 12,40."),
+                    ("Une inscription gravée en anglais sur le mur de la galerie indique : 'If you don't understand the gargoyle's clue, you should ask...'. Quelle phrase d'anglais de classe Léa doit-elle utiliser pour demander de l'aide ?", "Can you help me please?", ["Where is the room?", "Thank you very much", "Nice to meet you"], "La formule de demande polie est 'Can you help me please?'."),
+                    ("Une statue de la galerie représente une araignée géante aux côtés de chauves-souris. D'après la classification scientifique des animaux, quel critère permet d'affirmer que l'araignée appartient au groupe des arachnides et non à celui des insectes ?", "Elle possède 8 pattes (4 paires) et n'a pas d'antennes", ["Elle a 6 pattes et des ailes", "Elle a un squelette interne", "Elle a 10 pattes"], "Les arachnides ont 8 pattes (4 paires) et pas d'antennes."),
+                    ("Sur un bas-relief antique de la galerie, Léa déchiffre des symboles gravés en forme de clous et de coins remontant au IIIe millénaire avant J.-C. Quel nom porte cette première écriture née en Mésopotamie ?", "L'écriture cunéiforme", ["Les hiéroglyphes", "L'alphabet grec", "L'écriture cursive"], "L'écriture cunéiforme en forme de coins est apparue en Mésopotamie."),
+                    ("Léa consulte le lexique des émotions de la peur face aux monstres de la galerie. Quel sentiment désigne une terreur extrême face au danger ?", "L'épouvante", ["La joie", "La sérénité", "L'indifférence"], "L'épouvante désigne un sentiment de terreur intense."),
+                    ("La dalle carrée sur laquelle repose la gargouille gardienne mesure 1,5 m de côté. Quel est le périmètre de cette dalle carrée ?", "6 m", ["2,25 m", "4,5 m", "3 m"], "Périmètre = 4 × 1,5 m = 6 m."),
+                    ("Une fresque lumineuse représente le mouvement de la Terre autour du Soleil. Comment appelle-t-on ce mouvement orbital complet et quelle est sa durée environ ?", "La révolution, qui dure environ 365,25 jours", ["La rotation, qui dure 24h", "La gravitation, qui dure 28 jours", "L'éclipse, qui dure 12h"], "La révolution est le voyage autour du Soleil en 365,25 jours."),
+                    ("Pour dessiner le plan d'évasion de la galerie, une consigne en anglais indique : 'Use a glue stick and a pencil.' De quelles fournitures Léa doit-elle se munir ?", "Un bâton de colle et un crayon à papier", ["Une règle et des ciseaux", "Un taille-crayon et un feutre", "Une trousse et un cahier"], "'A glue stick' = un bâton de colle, 'a pencil' = un crayon à papier."),
+                    ("Dans le conte hanté écrit sur une stèle, le récit commence par une vie paisible au royaume, interrompue par l'arrivée soudaine d'un dragon. Quelle étape du schéma narratif cette arrivée représente-t-elle ?", "L'élément perturbateur", ["La situation initiale", "Les péripéties", "Le dénouement"], "L'élément perturbateur déclenche les aventures du récit."),
+                    ("Léa possède 20 pièces magiques. Elle dépense 7,80 pièces pour acheter une potion d'invisibilité dans la galerie. Combien lui reste-t-il ?", "12,20 pièces", ["12,80 pièces", "13,20 pièces", "11,80 pièces"], "20 - 7,80 = 12,20 pièces."),
+                    ("Une grande peinture murale montre des hommes préhistoriques pratiquant la culture du blé, l'élevage des moutons et vivant dans des villages fixes. À quelle période de la Préhistoire cette révolution correspond-elle ?", "Le Néolithique", ["Le Paléolithique", "Le Moyen Âge", "L'Antiquité"], "Le Néolithique marque le passage à la sédentarité et l'agriculture."),
+                    ("Pour réussir l'épreuve de sciences de la galerie, Léa doit trier les êtres vivants. Quelles caractéristiques biologiques sont partagées par TOUS les êtres vivants ?", "Ils naissent, se nourrissent, grandissent et se reproduisent", ["Ils ont des plumes et volent", "Ils vivent sous l'eau", "Ils fabriquent leur propre lumière"], "Tous les êtres vivants naissent, se nourrissent, grandissent et se reproduisent."),
+                    ("Dans la phrase d'avertissement : 'La gargouille attentive observe la jeune sorcière', quelle est la classe grammaticale du mot 'attentive' ?", "Un adjectif qualificatif", ["Un nom commun", "Un verbe à l'infinitif", "Un adverbe"], "'Attentive' est un adjectif qualificatif qui précise le nom 'gargouille'."),
+                    ("Un manuscrit en anglais demande à Léa d'épeler le mot 'H-A-L-F-W-A-Y'. Que signifie le verbe anglais 'to spell' ?", "Épeler (nommer les lettres d'un mot une par une)", ["Écrire en majuscules", "Dessiner une carte", "Compter les syllabes"], "'To spell' signifie nommer les lettres d'un mot une à une."),
+                    ("Un grimoire ancien posé sur un lutrin compte 24 formules magiques. Léa découvre que 3/4 de ces formules sont des sorts de protection. Combien de sorts de protection le grimoire contient-il ?", "18 sorts de protection", ["12 sorts", "20 sorts", "16 sorts"], "(24 ÷ 4) × 3 = 18."),
+                    ("En lisant la charte d'honneur des sorciers du collège, Léa apprend qu'il faut écouter la parole de ses camarades et respecter le matériel. Quel est l'objectif majeur de ces règles de vie collective ?", "Garantir le vivre-ensemble et permettre à chacun de travailler dans le respect", ["Punir les élèves", "Donner des devoirs supplémentaires", "Sélectionner les délégués"], "L'EMC enseigne le vivre-ensemble et le respect mutuel."),
+                    ("La Terre effectue une rotation complète sur son axe en environ combien d'heures, provoquant l'alternance du jour et de la nuit ?", "24 heures", ["365 heures", "12 heures", "48 heures"], "La rotation sur elle-même dure 24 heures."),
+                    ("Pour interroger le spectre de la galerie sur son âge, quelle question en anglais Léa doit-elle formuler ?", "How old are you?", ["What is your age?", "How are you?", "Where are you from?"], "La formule exacte est 'How old are you?'."),
+                    ("Quelle condition est considérée par les scientifiques comme indispensable pour qu'une planète puisse abriter la vie ?", "La présence d'eau à l'état liquide", ["Un sol uniquement rocheux", "L'absence d'atmosphère", "Une température de 100°C"], "L'eau liquide est le milieu indispensable aux réactions de la vie.")
                 ],
                 2: [
-                    ("En braquant la grande lunette de l'Observatoire vers le centre du système stellaire, quel astre massif Léa observe-t-elle au centre des orbites ?", "Le Soleil", ["La Lune", "Jupiter", "La Voie Lactée"], "Le Soleil est l'étoile au centre de notre système solaire."),
-                    ("En observant les planètes depuis la tour, Léa classe celles qui possèdent une surface rocheuse solide. Lesquelles sont des planètes telluriques ?", "Mercure, Vénus, La Terre, Mars", ["Jupiter, Saturne, Uranus", "La Lune et le Soleil", "Uniquement la Terre"], "Les 4 planètes telluriques solides sont Mercure, Vénus, la Terre et Mars."),
-                    ("Dans « Ce soir, Léa observe les constellations sous la pleine lune », quelle est la fonction du groupe prépositionnel « sous la pleine lune » ?", "Complément circumstantial de lieu", ["Sujet du verbe", "Complément d'objet direct", "Attribut du sujet"], "'Sous la pleine lune' indique où se déroule l'action (CC de lieu)."),
-                    ("La Terre effectue une révolution complète autour du Soleil en environ 365,25 jours. À quelle période de temps cela correspond-il ?", "Un an", ["Un mois", "Une semaine", "Un siècle"], "La révolution de 365,25 jours correspond à une année."),
-                    ("Pour saluer le gardien fantastique de la tour de manière informelle en anglais, quel mot Léa emploie-t-elle ?", "Hi!", ["Goodbye!", "Thank you!", "Sorry!"], "'Hi!' est la salutation informelle courante."),
-                    ("Quel phénomène naturel quotidien est directement engendré par la rotation de la Terre sur son axe en 24 heures ?", "L'alternance du jour et de la nuit", ["Les quatre saisons", "Les éclipses de Soleil", "Les phases de la Lune"], "La rotation en 24h expose alternativement chaque face de la Terre au Soleil (jour/nuit)."),
-                    ("Sur une frise chronologique, Léa observe les travaux des astronomes du XVIIIe siècle. À quelle période d'années ce siècle correspond-il ?", "De 1701 à 1800", ["De 1801 à 1900", "De 1601 à 1700", "De 1700 à 1799"], "Le XVIIIe siècle s'étend de l'année 1701 à l'année 1800."),
-                    ("Pour viser une nébuleuse, Léa repère sa position : 4 carreaux vers la droite (abscisse) et 3 vers le haut (ordonnée). Les coordonnées du point se notent (4 ; ___).", "3", ["4", "7", "12"], "Les coordonnées d'un point se notent (abscisse ; ordonnée) : (4 ; 3)."),
-                    ("Léa lit la consigne magique : « Garde les yeux au ciel et l'esprit clair ! ». De quel type de phrase s'agit-il ?", "Une phrase injonctive (impérative)", ["Une phrase déclarative", "Une phrase interrogative", "Une phrase négative"], "Une phrase injonctive donne un ordre ou un conseil."),
-                    ("Quelles observations scientifiques démontrent que la Terre est sphérique et non plate ?", "L'ombre portée arrondie de la Terre sur la Lune et la disparition progressive des bateaux à l'horizon", ["La forme plate des cartes routières", "Le fait que l'eau coule vers le bas", "La couleur bleue des océans"], "L'ombre circulaire lors d'une éclipse et la courbure de l'horizon prouvent la sphéricité."),
-                    ("L'horloge magique de la tour affiche « a quarter past seven ». Quelle heure est-il exactement ?", "7 h 15", ["7 h 45", "6 h 45", "7 h 30"], "'A quarter past seven' = 7 heures et un quart (7h15)."),
-                    ("Une observation céleste nécessite 142 minutes. Convertis cette durée en heures et minutes :", "2 heures et 22 minutes", ["1 heure et 42 minutes", "2 heures et 42 minutes", "3 heures et 12 minutes"], "142 minutes = (2 × 60 min) + 22 min = 2 h 22 min."),
-                    ("Léa rencontre l'adjectif « chimérique » pour qualifier une créature. Que signifie ce terme ?", "Imaginaire ou issu du merveilleux", ["Effrayant et dangereux", "Petit et rapide", "Scientifique et réel"], "'Chimérique' qualifie ce qui est imaginaire ou irréel."),
-                    ("Dans le laboratoire, Léa doit prélever précisément 100 mL d'eau pure. Quel instrument de verrerie garantit la mesure la plus précise ?", "Une éprouvette graduée", ["Un bécher", "Un tube à essais", "Un verre à pied"], "L'éprouvette graduée est l'instrument le plus précis pour mesurer des volumes de liquide."),
-                    ("Quelle invention majeure survenue vers 3500 av. J.-C. en Mésopotamie marque la fin de la Préhistoire ?", "L'apparition de l'écriture", ["L'invention de la roue", "La découverte du feu", "La construction des pyramides"], "L'apparition de l'écriture vers 3500 av. J.-C. marque l'entrée dans l'Histoire."),
-                    ("Pour exprimer la proportion d'eau recouvrant la planète sous forme décimale, Léa transforme la fraction 7/10. Quel nombre obtient-elle ?", "0,7", ["0,07", "7,0", "1,4"], "7/10 = 7 ÷ 10 = 0,7."),
-                    ("Complète : « He is very ___, he always puts his tools in order ». Quel adjectif anglais signifie « ordonné » ?", "tidy", ["noisy", "bad-tempered", "generous"], "'Tidy' qualifie une personne ordonnée."),
-                    ("Pourquoi la présence d'eau à l'état liquide est-elle indispensable à l'apparition de la vie sur une planète ?", "Elle constitue le milieu indispensable aux réactions chimiques de la vie", ["Elle permet uniquement aux bateaux de flotter", "Elle empêche les volcans d'exploser", "Elle réchauffe le cœur de la planète"], "Sans eau liquide, les molécules du vivant ne peuvent pas réagir pour former des organismes."),
-                    ("Quels sont les homophones grammaticaux corrects : « Léa ___ arrivée au sommet ___ elle consulte son grimoire. » ?", "est / et", ["et / est", "est / est", "et / et"], "'est' (verbe être) / 'et' (conjonction de coordination)."),
-                    ("Lorsque la Terre se place entre le Soleil et la Lune, quelle est la forme de son ombre sur le disque lunaire ?", "Une forme circulaire (arc de cercle)", ["Une forme carrée", "Une ligne droite", "Une forme triangulaire"], "L'ombre arrondie de la Terre sur la Lune est une preuve historique de sa sphéricité.")
+                    ("En braquant la grande lunette de l'Observatoire de la Pleine Lune vers le centre de notre système stellaire, Léa doit identifier l'astre massif autour duquel orbitent la Terre et les autres planètes. Quel est cet astre ?", "Le Soleil", ["La Lune", "Jupiter", "La Voie Lactée"], "Le Soleil est l'étoile au centre de notre système stellaire."),
+                    ("En observant les différentes planètes du système solaire depuis la tour de l'observatoire, Léa doit classer celles qui possèdent une surface rocheuse solide. Lesquelles de ces planètes sont des planètes telluriques ?", "Mercure, Vénus, La Terre, Mars", ["Jupiter, Saturne, Uranus", "Neptune et Pluton", "Uniquement la Terre"], "Les 4 planètes telluriques sont solides et rocheuses."),
+                    ("Dans la phrase gravée sur le rebord du télescope : « Ce soir, Léa observe les constellations sous la pleine lune », le groupe prépositionnel « sous la pleine lune » indique le lieu et joue la fonction de complément circonstanciel de ___ .", "lieu", ["temps", "moyen", "cause"], "Indique l'endroit de l'observation."),
+                    ("La Terre effectue une révolution complète autour du Soleil en environ 365,25 jours. À quelle période de temps courante cela correspond-il dans notre calendrier ?", "Un an", ["Un mois", "Un siècle", "Une semaine"], "Une révolution complète correspond à 1 an."),
+                    ("Léa aperçoit un parchemin écrit en anglais posé sur le pupitre de l'observatoire. Pour saluer le gardien fantastique de la tour de manière informelle, quel mot doit-elle employer ?", "Hi!", ["Goodbye!", "Sorry!", "Please!"], "'Hi!' est une salutation amicale informelle."),
+                    ("Quel phénomène naturel quotidien sur Terre est directement engendré par la rotation de la planète sur son propre axe en 24 heures ?", "L'alternance du jour et de la nuit", ["Les quatre saisons", "Les éclipses de Lune", "Le mouvement des marées"], "La rotation de la Terre crée l'alternance jour/nuit."),
+                    ("Sur une frise chronologique conservée dans la tour, Léa observe les travaux des premiers astronomes du XVIIIe siècle. À quelle période d'années ce siècle correspond-il ?", "De 1701 à 1800", ["De 1801 à 1900", "De 1601 à 1700", "De 1700 à 1799"], "Le XVIIIe siècle va du 1er janvier 1701 au 31 décembre 1800."),
+                    ("Pour viser une nébuleuse sur la carte céleste quadrillée, Léa repère sa position : 4 carreaux vers la droite (abscisse) et 3 carreaux vers le haut (ordonnée). Les coordonnées du point se notent :", "(4 ; 3)", ["(3 ; 4)", "(4 ; 4)", "(3 ; 3)"], "Les coordonnées se notent (abscisse ; ordonnée) soit (4 ; 3)."),
+                    ("Léa lit la consigne magique inscrite sur le cadran céleste : « Garde les yeux au ciel et l'esprit clair ! ». De quel type de phrase s'agit-il ?", "Une phrase injonctive", ["Une phrase interrogative", "Une phrase déclarative", "Une phrase négative"], "Elle donne un ordre/conseil à l'impératif."),
+                    ("Quelle observation scientifique prouve dès l'Antiquité que la Terre est sphérique ?", "L'ombre portée de la Terre sur la Lune lors d'une éclipse lunaire est toujours arrondie", ["La couleur bleue du ciel", "Le bruit du vent", "La présence des nuages"], "L'ombre circulaire portée lors d'une éclipse prouve la sphéricité."),
+                    ("L'horloge magique de la tour affiche l'inscription anglaise « a quarter past seven ». Quelle heure est-il exactement ?", "7 h 15", ["7 h 45", "6 h 45", "7 h 30"], "'A quarter past seven' signifie 7 heures et quart (7h15)."),
+                    ("Un alignement de planètes nécessite une observation de 142 minutes. En convertissant cette durée, cela équivaut à :", "2 heures et 22 minutes", ["2 heures et 42 minutes", "1 heure et 42 minutes", "3 heures"], "142 minutes = 120 min (2h) + 22 min."),
+                    ("Dans le carnet de vocabulaire du chercheur, Léa rencontre le qualificatif « chimérique » pour désigner une créature du ciel hanté. Que signifie ce terme ?", "Imaginaire ou issu du merveilleux", ["Très ancien", "Régulier et précis", "Dangereux et toxique"], "'Chimérique' désigne ce qui relève de l'illusion ou du merveilleux."),
+                    ("Dans le laboratoire de l'observatoire, Léa doit prélever précisément un volume de 100 mL d'eau pure pour une expérience. Quel instrument de verrerie gradué garantit la mesure la plus précise ?", "Une éprouvette graduée", ["Un bécher", "Un tube à essai", "Un entonnoir"], "L'éprouvette graduée garantit une mesure précise de volume."),
+                    ("Sur la fresque des connaissances humaines, quelle invention majeure survenue vers 3500 avant J.-C. en Mésopotamie marque la fin de la Préhistoire et le début de l'Histoire ?", "L'apparition de l'écriture", ["La découverte du feu", "L'invention de la roue", "L'agriculture"], "L'écriture fait passer l'humanité de la Préhistoire à l'Histoire."),
+                    ("Pour exprimer la proportion d'eau recouvrant la planète sous forme décimale, Léa transforme la fraction 7/10. Quel nombre décimal obtient-elle ?", "0,7", ["0,07", "7,0", "0,77"], "7 ÷ 10 = 0,7."),
+                    ("Léa étudie la description d'un grand astronome : « He is very ___, he always puts his tools in order ». Quel adjectif anglais signifiant « ordonné » complète la phrase ?", "tidy", ["messy", "noisy", "bad-tempered"], "'Tidy' signifie ordonné et soigneux."),
+                    ("Pourquoi la présence d'eau à l'état liquide est-elle considérée par les scientifiques comme une condition indispensable pour qu'une exoplanète puisse abriter la vie ?", "L'eau liquide est essentielle car elle constitue le milieu biologique indispensable aux réactions chimiques de la vie", ["Elle refroidit le sol", "Elle éclaire la nuit", "Elle crée la gravité"], "L'eau liquide permet le déroulement des réactions biologiques de la vie."),
+                    ("Quels sont les homophones grammaticaux corrects pour compléter la phrase : « Léa ___ arrivée au sommet de la tour ___ elle consulte son grimoire. » ?", "est / et", ["et / est", "est / est", "et / et"], "'est' (verbe être) / 'et' (conjonction de coordination)."),
+                    ("Lorsque la Terre se place exactement entre le Soleil et la Lune, elle projette son ombre sur le disque lunaire pendant une éclipse. Quelle est la forme géométrique constante de cette ombre ?", "Une forme circulaire / un arc de cercle", ["Un carré parfait", "Un triangle rectangle", "Une ligne droite"], "L'ombre portée par la sphère terrestre est circulaire.")
+                ],
+                3: [
+                    ("Dans le Labyrinthe des Toiles, Léa doit mesurer une toile d'araignée carrée de 2,5 m de côté. Quel est son périmètre exact ?", "10 m", ["6,25 m", "5 m", "7,5 m"], "Périmètre du carré = 4 × 2,5 m = 10 m."),
+                    ("Comment appelle-t-on deux droites d'un même plan qui ne se coupent jamais, quelle que soit leur prolongation ?", "Des droites parallèles", ["Des droites perpendiculaires", "Des droites sécantes", "Des droites obliques"], "Deux droites parallèles ne se croisent jamais."),
+                    ("Comment appelle-t-on deux droites qui se coupent en formant un angle droit de 90° ?", "Des droites perpendiculaires", ["Des droites parallèles", "Des droites opposées", "Des droites confondues"], "Des droites perpendiculaires se coupent à angle droit."),
+                    ("Dans 'des toiles géométriques', quelle est l'accord correct de l'adjectif 'géométrique' ?", "géométriques (féminin pluriel)", ["géométrique", "géométriques (masculin)", "géométrique (invariable)"], "S'accorde au féminin pluriel avec 'toiles'."),
+                    ("Dans le chaudron du labyrinthe, Léa verse 3/4 de 20 cl de potion magique. Combien de cl verse-t-elle ?", "15 cl", ["10 cl", "12 cl", "18 cl"], "(20 ÷ 4) × 3 = 15 cl."),
+                    ("Quelle est la traduction anglaise de 'un chaudron de sorcière' ?", "A witch's cauldron", ["A flying broom", "A magic wand", "A pointed hat"], "'A witch's cauldron' = un chaudron de sorcière."),
+                    ("À quel groupe d'animaux appartiennent les araignées géantes du labyrinthe avec leurs 8 pattes ?", "Les arachnides", ["Les insectes", "Les myriapodes", "Les crustacés"], "Les arachnides possèdent 8 pattes et 0 antenne."),
+                    ("Au Néolithique, quel matériau poli les hommes utilisaient-ils pour fabriquer leurs outils et haches ?", "La pierre polie", ["Le fer pur", "Le plastique", "Le bronze massif"], "Le Néolithique est l'âge de la pierre polie."),
+                    ("Quel est l'antonyme (contraire) du mot 'obscur' ou 'sombre' ?", "Lumineux / clair", ["Ténébreux", "Noir", "Sombre"], "'Lumineux' est le contraire d'obscur."),
+                    ("Léa paie 4,25 pièces magiques avec un billet de 10 pièces. Combien le marchand de potions lui rend-il ?", "5,75 pièces", ["6,25 pièces", "5,25 pièces", "6,75 pièces"], "10 - 4,25 = 5,75."),
+                    ("Quelle est la nature astronomique du Soleil au centre de notre système ?", "Une étoile", ["Une planète tellurique", "Un satellite naturel", "Une comète"], "Le Soleil est l'étoile centrale du système solaire."),
+                    ("Conjugue le verbe 'sortir' au présent avec 'nous' :", "Nous sortons", ["Nous sortissons", "Nous sortez", "Nous sortent"], "Au présent : nous sortons."),
+                    ("Que signifie l'expression anglaise d'Halloween 'Trick or treat' ?", "Des bonbons ou un sort", ["La bourse ou la vie", "Un cadeau ou une fleur", "Bonjour ou au revoir"], "'Trick or treat' = des bonbons ou un sort."),
+                    ("Quels sont les deux grands fleuves de Mésopotamie qui entourent le berceau de l'écriture ?", "Le Tigre et l'Euphrate", ["Le Nil et l'Amazone", "Le Rhin et le Danube", "Le Mississipi et le Niger"], "La Mésopotamie signifie 'le pays entre les fleuves' (Tigre et Euphrate)."),
+                    ("Combien font les 2/5 de 100 g de poudre de crapaud ?", "40 g", ["50 g", "60 g", "30 g"], "(100 ÷ 5) × 2 = 40 g."),
+                    ("Quel mouvement de la Terre sur son axe crée l'alternance du jour et de la nuit en 24h ?", "La rotation", ["La révolution", "L'éclipse", "La marée"], "La rotation de la Terre sur elle-même dure 24h."),
+                    ("Complète correctement : 'Léa ___ trouvé une clé qu'elle donne ___ son ami.'", "a / à", ["à / a", "a / a", "à / à"], "'a' (verbe avoir) / 'à' (préposition)."),
+                    ("Quelle est la traduction anglaise de 'une chauve-souris noire' ?", "A black bat", ["A white cat", "A green frog", "A red spider"], "'A black bat' = une chauve-souris noire."),
+                    ("Combien de faces carrées possède un cube parfait ?", "6 faces", ["4 faces", "8 faces", "12 faces"], "Un cube possède 6 faces carrées égales."),
+                    ("Quel est le résultat du calcul décimal 15,30 + 4,70 ?", "20,00", ["19,00", "20,10", "19,80"], "15,30 + 4,70 = 20,00.")
+                ],
+                4: [
+                    ("Dans la Crypte des Anciens Rois, Léa déchiffre des hiéroglyphes sur un sarcophage. Dans quel pays antique cette écriture sacrée était-elle utilisée ?", "En Égypte antique", ["En Mésopotamie", "En Grèce antique", "À Rome"], "Les hiéroglyphes étaient l'écriture de l'Égypte antique."),
+                    ("Quel célèbre roi / pharaon égyptien régnait sur le royaume du Nil durant l'Antiquité ?", "Ramsès II (ou Toutânkhamon)", ["Jules César", "Charlemagne", "Louis XIV"], "Ramsès II et Toutânkhamon étaient pharaons d'Égypte."),
+                    ("Dans 'La crypte antique renferme un trésor', quelle est la fonction du groupe 'un trésor' ?", "Complément d'objet direct (COD)", ["Sujet du verbe", "Attribut du sujet", "Complément circonstanciel"], "La crypte renferme quoi ? 'un trésor' = COD."),
+                    ("Calcule la fraction simplifiée 1/2 + 1/4 pour doser l'élixir d'éternité :", "3/4", ["2/6", "2/4", "1/6"], "1/2 = 2/4, donc 2/4 + 1/4 = 3/4."),
+                    ("Comment dit-on 'un roi' et 'une reine' en anglais ?", "A king / a queen", ["A prince / a princess", "A knight / a lady", "A lord / a witch"], "'A king' = un roi, 'a queen' = une reine."),
+                    ("Quelle science étudie les fossiles et les roches anciennes de la crypte ?", "La géologie et la paléontologie", ["L'astronomie", "La chimie organique", "La physiologie"], "La géologie et la paléontologie étudient les roches et fossiles."),
+                    ("Quelle est la capitale actuelle de l'Égypte, située près des grandes pyramides de Gizeh ?", "Le Caire", ["Alexandrie", "Louxor", "Athènes"], "Le Caire est la capitale de l'Égypte."),
+                    ("Quel est le féminin de l'adjectif 'ancien' dans 'un manuscrit ancien' ?", "Ancienne", ["Anciens", "Anciennes", "Anciennette"], "Un manuscrit ancien / une stèle ancienne."),
+                    ("Un sarcophage mesure 2,20 m de long et 0,80 m de large. Quel est son périmètre ?", "6,00 m", ["3,00 m", "1,76 m", "4,40 m"], "Périmètre = 2 × (2,20 + 0,80) = 2 × 3,00 = 6,00 m."),
+                    ("Quel gaz indispensable à la respiration des êtres vivants représente 21% de l'air ?", "Le dioxygène (O₂)", ["Le diazote (N₂)", "Le dioxyde de carbone", "L'hélium"], "Le dioxygène représente 21% de l'air."),
+                    ("Quel mot anglais signifie 'un squelette' ?", "A skeleton", ["A ghost", "A mummy", "A shadow"], "'A skeleton' = un squelette."),
+                    ("À quel siècle correspond l'année 1492 (découverte de l'Amérique par Christophe Colomb) ?", "Le XVe siècle", ["Le XIVe siècle", "Le XVIe siècle", "Le XIIIe siècle"], "1492 appartient au XVe siècle (1401-1500)."),
+                    ("Dans 'Les momies se réveillent doucement', quelle est la classe grammaticale de 'doucement' ?", "Un adverbe", ["Un adjectif", "Un nom", "Un verbe"], "'Doucement' est un adverbe de manière."),
+                    ("Calcule : 100 - 37,5 =", "62,5", ["63,5", "72,5", "52,5"], "100 - 37,5 = 62,5."),
+                    ("Quel organe du corps humain pompe le sang et accélère lors d'un effort ou d'une frayeur ?", "Le cœur", ["Les poumons", "L'estomac", "Le cerveau"], "Le cœur est la pompe musculaire du réseau sanguin."),
+                    ("Quelle est la formule de politesse anglaise pour répondre 'Je vous en prie' quand on te dit 'Thank you' ?", "You're welcome!", ["Nice to meet you!", "See you later!", "Excuse me!"], "'You're welcome!' = de rien / je vous en prie."),
+                    ("Quelle forme de gouvernement où le pouvoir appartient au peuple s'est développée à Athènes ?", "La démocratie", ["La monarchie absolue", "La tyrannie", "La dictature"], "La démocratie athénienne."),
+                    ("Quel est le résultat de 12 × 0,5 ?", "6", ["12,5", "24", "6,5"], "Multiplier par 0,5 revient à diviser par 2 : 12 ÷ 2 = 6."),
+                    ("Dans 'Léa franchit la porte', à quel temps du présent le verbe 'franchit' est-il conjugué ?", "Le présent de l'indicatif", ["Le passé composé", "L'imparfait", "Le futur"], "Franchit = présent de l'indicatif (3e groupe)."),
+                    ("Quelle est la température de congélation de l'eau pure à pression atmosphérique normale ?", "0 °C", ["100 °C", "10 °C", "-10 °C"], "L'eau pure gèle à 0 °C.")
+                ],
+                5: [
+                    ("Dans la Salle de la Citrouille d'Émeraude, Léa doit assembler les 5 Mots-Pouvoirs du Rituel Ultime. Quel est l'objectif final de cette quête ?", "Lever la malédiction et libérer la Citrouille d'Émeraude", ["Détruire le manoir", "Capturer les fantômes", "S'enfuir sans rien faire"], "Lever la malédiction du Manoir des Sorciers."),
+                    ("Quelle proportion représentée par la fraction 5/5 équivaut à la totalité du pouvoir magique ?", "1 (la totalité)", ["0,5", "5", "0"], "5/5 = 1 entier."),
+                    ("Dans la phrase 'La Citrouille d'Émeraude brille d'une lueur éclatante', quel est l'adjectif qualificatif ?", "Éclatante", ["Citrouille", "Brille", "Lueur"], "'Éclatante' qualifie la lueur."),
+                    ("Quel est le symbole chimique de l'eau pure indispensable au rituel ?", "H₂O", ["CO₂", "O₂", "N₂"], "H₂O = 2 Hydrogène + 1 Oxygène."),
+                    ("Comment dit-on 'La victoire finale' en anglais ?", "The final victory", ["The first game", "The dark room", "The magic potion"], "'The final victory' = la victoire finale."),
+                    ("Sur la frise du Manoir, quelle période succède au Néolithique avec l'apparition des premiers états et villes ?", "L'Antiquité", ["La Préhistoire", "Le Moyen Âge", "Les Temps Modernes"], "L'Antiquité succède à la Préhistoire."),
+                    ("Léa combine 15,5 cl de jus de mandragore et 24,5 cl de sérum d'émeraude. Quel volume total obtient-elle ?", "40 cl", ["39 cl", "41 cl", "35 cl"], "15,5 + 24,5 = 40 cl."),
+                    ("Quel temps du récit est employé pour décrire le décor magique et les actions secondaires ('La citrouille brillait...') ?", "L'imparfait de l'indicatif", ["Le passé simple", "Le présent", "Le futur"], "L'imparfait sert à la description au passé."),
+                    ("Quelle est la durée exacte de la révolution de la Terre autour du Soleil ?", "365,25 jours", ["24 heures", "28 jours", "12 heures"], "365,25 jours = 1 an."),
+                    ("Que signifie l'expression anglaise 'We did it!' lancée par Léa lors de la victoire ?", "Nous avons réussi !", ["Nous avons perdu !", "Recommençons !", "Au revoir !"], "'We did it!' = Nous avons réussi !"),
+                    ("Quel est le résultat du calcul 100 ÷ 4 ?", "25", ["20", "50", "30"], "100 ÷ 4 = 25."),
+                    ("Dans 'Les sorciers fêtent la victoire', quelle est la classe du mot 'fêtent' ?", "Un verbe", ["Un nom", "Un adjectif", "Un adverbe"], "'Fêtent' est le verbe féter conjugué au présent."),
+                    ("Quel gaz rejeté par la respiration des êtres vivants est consommé par les plantes vertes lors de la photosynthèse ?", "Le dioxyde de carbone (CO₂)", ["Le dioxygène (O₂)", "Le diazote (N₂)", "L'hélium"], "Les plantes consomment du CO₂."),
+                    ("Quel est le périmètre d'un rectangle de 6 cm de long et 4 cm de large ?", "20 cm", ["24 cm", "10 cm", "12 cm"], "Périmètre = 2 × (6 + 4) = 20 cm."),
+                    ("En Histoire, quelle invention née en Mésopotamie vers 3500 av. J.-C. permet de conserver la mémoire des récits ?", "L'écriture", ["L'imprimerie", "La télévision", "Le téléphone"], "L'écriture née vers 3500 av. J.-C."),
+                    ("Quel pronom personnel sujet anglais remplace 'Léa and her friends' ?", "They", ["We", "You", "He"], "'They' = ils / elles."),
+                    ("Convertis 2,5 litres d'eau magique en centilitres (cl) :", "250 cl", ["25 cl", "2500 cl", "0,25 cl"], "1 L = 100 cl, donc 2,5 L = 250 cl."),
+                    ("Quel est le contraire (antonyme) du mot 'réussite' ?", "Échec", ["Victoire", "Succès", "Triomphe"], "'Échec' est le contraire de réussite."),
+                    ("Quelle est la forme géométrique d'un cercle parfait formé par les 5 Mots-Pouvoirs ?", "Une courbe fermée dont tous les points sont à égale distance du centre", ["Un carré à 4 angles droits", "Un triangle à 3 côtés", "Une ligne droite"], "Définition géométrique du cercle."),
+                    ("Quel titre reçoit Léa après avoir réussi les 5 épreuves et libéré la Citrouille d'Émeraude ?", "Maître Sorcière de l'Académie d'Halloween", ["Apprentie débutante", "Gardienne de la porte", "Visiteuse du soir"], "Elle obtient son diplôme officiel de Maître Sorcière.")
                 ]
             }
-            
-            q_curr_lea = q_raw_lea.get(j_sel, q_raw_lea[1])
+
+            q_list_curr = q_raw_lea.get(j_sel, q_raw_lea[1])
             
             with st.form(key=f"f_lea_{j_sel}"):
                 user_ans = []
-                for idx, item in enumerate(q_curr_lea):
+                for idx, item in enumerate(q_list_curr):
                     qt, qcorr, qwrongs, qexp = item
                     q_id = f"lea_{j_sel}_{idx}"
                     opts = get_shuffled_options(q_id, qcorr, qwrongs)
@@ -719,7 +785,7 @@ if st.session_state.selected_hero == "lea":
     # --- TAB 3 : LE GRIMOIRE DU SAVOIR ---
     with tab_grimoire:
         st.subheader("📚 Le Grimoire du Savoir — Fiches de Révision 6ème")
-        display_document_if_exists([["grimoire", "lea"], ["grimoire", "6°"], ["grimoire", "6"], ["grimoire", "savoir"]], "Le Grimoire du Savoir - Léa 6ème", "grimoire_lea")
+        display_document_if_exists([["grimoire_lea"], ["grimoire", "lea"], ["savoir"]], "Le Grimoire du Savoir - Léa 6ème", "grimoire_lea")
 
 # ==============================================================================
 # SECTION POUR LUCAS (4ÈME)
@@ -798,13 +864,13 @@ else:
         
         if j_sel == 0:
             st.markdown("### 📍 Jour 0 : Lancement de l'Aventure & Bande-Annonce")
-            display_video_if_exists([["bande-annonce", "4"], ["crypte"], ["trailer", "4"], ["j0"]], "Bande-Annonce - La Crypte des Ombres", target_hero="lucas")
+            display_video_if_exists([["bande-annonce"], ["crypte"], ["trailer"], ["j0"], ["jour 0"], ["0"]], "Bande-Annonce - La Crypte des Ombres", "lucas")
             st.markdown("""
                 <div class="journal-card">
-                    <h3 style="color: #FF9E00 !important;">🦇 Bienvenue dans la Crypte des Ombres !</h3>
-                    <p style="font-size: 1.2rem;">Lucas, une faille dimensionnelle glaciale s'est ouverte sous ton collège ! Tu dois franchir les 5 salles de la Crypte pour fermer le Portail du Cauchemar.</p>
-                    <p style="font-size: 1.2rem;"><b>Ton plan de vol :</b> Chaque jour de tes vacances, entre dans une nouvelle salle, résous le quiz de 20 questions de cours (8 matières) pour débloquer le <b>Code Secret</b>, et note-le dans ton Journal de la Quête !</p>
-                    <p style="color: #00FFCC !important; font-weight: bold; font-size: 1.2rem;">Rends-toi dès maintenant dans la Salle du Jour 1 pour débuter la quête !</p>
+                    <h3 style="color: #FF9E00 !important;">📜 Bienvenue dans la Crypte des Ombres !</h3>
+                    <p style="font-size: 1.2rem;">Lucas, une faille ténébreuse s'est ouverte sous l'école ! Pour la sceller, tu dois franchir les 5 salles de la Crypte.</p>
+                    <p style="font-size: 1.2rem;"><b>Ton plan de vol :</b> Résous chaque jour l'épreuve de 20 questions de cours sur tes 8 matières de 4ème pour révéler le <b>Code Secret</b> et le consigner dans ton Journal !</p>
+                    <p style="color: #00FFCC !important; font-weight: bold; font-size: 1.2rem;">Rends-toi dès maintenant au Jour 1 pour entrer dans le Laboratoire Maudit !</p>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -828,13 +894,14 @@ else:
             st.markdown(f"### 📍 {salles_lucas[j_sel]}")
             
             if j_sel == 6:
-                st.subheader("🧪 Épreuve Finale du Jour 6 : Le Grand Rituel d'Évasion")
-                st.caption("Validez vos 20 réponses pour déclencher la vidéo d'Épilogue et fermer le Portail du Cauchemar !")
+                st.subheader("🧪 Épreuve Finale du Jour 6 : Le Grand Rituel de Fermeture de la Faille")
+                st.caption("Validez vos 20 réponses pour sceller le Portail et déclencher la vidéo d'Épilogue !")
             else:
-                display_video_if_exists([[f"jour {j_sel}", "4"], [f"j{j_sel}", "4"], [f"jour {j_sel}"]], f"Teaser Vidéo - Jour {j_sel}", target_hero="lucas")
+                display_video_if_exists([[f"jour {j_sel}"], [f"j{j_sel}"], [f"jour_{j_sel}"], [f"j_{j_sel}"]], f"Teaser Vidéo - Jour {j_sel}", "lucas")
                 st.subheader("🧪 Épreuve du Jour : Les 20 Questions Multi-Matières Scénarisées du Studio")
                 st.caption("Sélectionnez la bonne réponse parmi les 4 propositions mélangées pour chaque question.")
             
+            # QUIZ SCÉNARISÉS LUCAS (4ÈME) PAR JOUR
             q_raw_lucas = {
                 1: [
                     ("Au milieu des fioles bouillonnantes du Laboratoire Maudit, une cuve de purification fume au centre de la pièce. Pour identifier la fiole d'eau pure qui neutralisera les vapeurs, tu observes sa structure moléculaire. De quels atomes une seule molécule d'eau (H₂O) est-elle constituée ?", "Deux atomes d'hydrogène et un atome d'oxygène", ["Deux atomes d'oxygène et un atome d'hydrogène", "Un atome de carbone et deux atomes d'hydrogène", "Un mélange de plusieurs corps purs sans aucun atome"], "Une molécule d'eau (H₂O) contient 2 atomes d'hydrogène et 1 atome d'oxygène."),
@@ -858,57 +925,101 @@ else:
                     ("Transforme au discours indirect : Le professeur recommanda : 'Faites vos exercices !'", "Le professeur recommanda de faire leurs exercices", ["Le professeur dit faites vos exercices", "Le professeur demande quoi", "Le professeur ordonna de faire mes devoirs"], "L'impératif au discours direct devient 'de + infinitif' au discours indirect."),
                     ("Comment s'appelle le point à la surface de la Terre situé directement à la verticale du foyer sismique ?", "L'épicentre", ["L'hypocentre", "Le cratère", "Le pôle"], "L'épicentre est le point à la surface où les secousses sismiques sont les plus fortes.")
                 ],
+                2: [
+                    ("Dans la Bibliothèque des Ombres, quels grands philosophes du XVIIIe siècle défendent les idées de liberté, de tolérance et de raison ?", "Voltaire, Rousseau, Montesquieu", ["Platon et Aristote", "Hugo et Zola", "Descartes et Newton"], "Les philosophes des Lumières du XVIIIe siècle."),
+                    ("Calcule la somme des deux fractions magiques 3/4 + 1/2 :", "5/4", ["4/6", "4/4", "3/8"], "1/2 = 2/4. Donc 3/4 + 2/4 = 5/4."),
+                    ("Dans 'Le Horla' de Maupassant, quel registre littéraire suscite le doute et la peur chez le lecteur face à l'irrationnel ?", "Le registre fantastique", ["Le registre comique", "Le registre lyrique", "Le registre épique"], "Le fantastique fait surgir l'irrationnel dans le quotidien."),
+                    ("Quelle était l'étape dramatique de la traversée de l'Atlantique par les navires négriers au XVIIIe siècle ?", "Le passage du milieu (Middle Passage)", ["Le grand tour du Nord", "La traversée du Sud", "La ligne équatoriale"], "C'était la traversée de l'Atlantique avec les captifs."),
+                    ("Dans un récit au passé, quel temps exprime une action ponctuelle, soudaine et délimitée du premier plan ?", "Le passé simple", ["L'imparfait", "Le présent", "Le plus-que-parfait"], "Le passé simple exprime l'action délimitée du premier plan."),
+                    ("Quelle forme d'énergie dépend à la fois de la masse et de la vitesse d'un objet en mouvement ?", "L'énergie cinétique", ["L'énergie nucléaire", "L'énergie thermique", "L'énergie chimique"], "Énergie cinétique = 1/2 m v²."),
+                    ("Quel est l'antonyme (contraire) de l'adjectif 'tidy' (ordonné) en anglais ?", "Messy", ["Clean", "Quiet", "Polite"], "'Messy' signifie désordonné."),
+                    ("Pour décrire un état temporaire ou une humeur en espagnol, quel verbe utilise-t-on ?", "Estar", ["Ser", "Tener", "Hacer"], "Estar exprime l'état temporaire et la localisation."),
+                    ("Comment s'appelle le tracé graphique qui enregistre la propagation des ondes sismiques lors d'un séisme ?", "Un sismogramme", ["Un barogramme", "Un thermogramme", "Un cardiogramme"], "Le sismogramme enregistre les secousses."),
+                    ("Dans la chaîne d'énergie, quel composant réalise la fonction 'Convertir' l'électricité en mouvement mécanique ?", "Le moteur", ["La batterie", "L'interrupteur", "Les fils de cuivre"], "Le moteur convertit l'énergie électrique en énergie mécanique."),
+                    ("Effectue l'addition des deux nombres relatifs (-5) + (-8) :", "-13", ["+13", "-3", "+3"], "La somme de deux négatifs donne un négatif : -13."),
+                    ("Quelle figure de style consiste à comparer deux éléments sans outil de comparaison ('Cet homme est un lion') ?", "Une métaphore", ["Une comparaison", "Une hyperbole", "Une personnification"], "La métaphore compare directement sans 'comme'."),
+                    ("Quel est le gaz indispensable qui constitue environ 21% de l'air de la bibliothèque ?", "Le dioxygène (O₂)", ["Le diazote (N₂)", "Le dioxyde de carbone", "L'argon"], "L'air contient 21% de dioxygène."),
+                    ("Quel auxiliaire modal anglais exprime une obligation stricte et absolue ('You ___ study') ?", "Must", ["Can", "May", "Should"], "'Must' exprime l'obligation absolue."),
+                    ("Conjugue le verbe 'hablar' au présent en espagnol avec le sujet 'nosotros' :", "Hablamos", ["Hablais", "Hablan", "Hablo"], "Nosotros hablamos."),
+                    ("Si 3 livres hantés coûtent 12 pièces magiques, combien coûtent 5 livres ?", "20 pièces", ["15 pièces", "18 pièces", "25 pièces"], "(12 ÷ 3) × 5 = 20 pièces."),
+                    ("Quel principe fondamental garantit la liberté de conscience et la neutralité de l'État envers toutes les religions ?", "La laïcité", ["La démocratie", "La république", "La citoyenneté"], "La laïcité garantit la liberté de croyance et de neutralité."),
+                    ("Quelle est la formule chimique exacte du gaz dioxyde de carbone ?", "CO₂", ["H₂O", "O₂", "N₂"], "CO₂ = 1 Carbone + 2 Oxygène."),
+                    ("Transforme la phrase au discours indirect : 'Il affirme : « Je connais le code secret »'", "Il affirme qu'il connaît le code secret", ["Il affirme je connais le code", "Il demande s'il connaît le code", "Il ordonne de connaître"], "Au discours indirect : 'qu'il connaît'."),
+                    ("Combien font les 3/4 de 40 livres hantés sur les étagères ?", "30 livres", ["20 livres", "25 livres", "35 livres"], "(40 ÷ 4) × 3 = 30.")
+                ],
+                3: [
+                    ("Si une roue dentée à 12 dents tourne à 100 tours/min et entraîne une roue à 24 dents, à quelle vitesse tourne la seconde ?", "50 tours/min", ["200 tours/min", "100 tours/min", "25 tours/min"], "La roue deux fois plus grande tourne deux fois moins vite."),
+                    ("Dans la chaîne d'énergie d'un treuil, quel bloc fonctionnel convertit l'électricité en rotation ?", "Convertir (le moteur)", ["Alimenter", "Distribuer", "Transmettre"], "Le moteur assure la conversion d'énergie."),
+                    ("Si un coursier parcourt 30 km en 30 minutes, quelle est sa vitesse moyenne en km/h ?", "60 km/h", ["30 km/h", "90 km/h", "120 km/h"], "30 km en 0,5 h = 60 km/h."),
+                    ("Dans 'Le Horla' de Maupassant, quel phénomène invisible hante le narrateur ?", "Un être invisible qui boit son lait et contrôle sa pensée", ["Un fantôme qui fait du bruit", "Un vampire avec des dents", "Un loup-garou"], "Le Horla est une présence invisible qui hante le récit."),
+                    ("Quelle invention majeure du XVIIIe siècle a permis le développement des premières usines et trains ?", "La machine à vapeur", ["L'électricité", "L'automobile", "L'avion"], "La machine à vapeur de James Watt."),
+                    ("Calcule le produit de (-2) × (-3) × (-4) :", "-24", ["+24", "-12", "+12"], "Trois facteurs négatifs donnent un résultat négatif : -24."),
+                    ("Comment traduit-on 'un engrenage' en anglais ?", "A gear", ["An engine", "A wheel", "A lever"], "'A gear' = un engrenage."),
+                    ("Conjugue l'obligation 'Tener que + infinitif' au présent avec 'tú' :", "Tienes que estudiar", ["Tiene que estudiar", "Tengo que estudiar", "Tenemos que estudiar"], "Tú tienes que..."),
+                    ("Quel type de volcanisme se caractérise par des éruptions calmes avec de longues coulées de lave fluide ?", "Le volcanisme effusif", ["Le volcanisme explosif", "Le volcanisme sous-marin", "Le volcanisme éteint"], "Le volcanisme effusif produit de la lave fluide."),
+                    ("Dans la réaction de combustion du carbone : C + O₂ -> ?", "CO₂ (dioxyde de carbone)", ["H₂O", "N₂", "O₃"], "C + O₂ produit du CO₂."),
+                    ("Effectue le produit de fractions 2/3 × 9/4 sous forme simplifiée :", "3/2", ["18/12", "5/7", "8/12"], "(2×9)/(3×4) = 18/12 = 3/2."),
+                    ("Quel groupe de mots appartient au champ lexical de la peur ?", "Terreur, frisson, épouvante, angoisse", ["Joie, rire, bonheur, plaisir", "Calme, silence, paix, repos", "Force, courage, victoire, gloire"], "Mots exprimant la peur."),
+                    ("Dans un système automatisé, quel composant capte l'information (ex: détecteur de présence) ?", "Un capteur / détecteur", ["Un actionneur", "Un moteur", "Une batterie"], "Les capteurs acquièrent l'information."),
+                    ("Quel mot interrogatif anglais emploie-t-on pour compter des éléments dénombrables ('___ books?') ?", "How many", ["How much", "How long", "How far"], "'How many' pour les éléments dénombrables."),
+                    ("En espagnol, quelle préposition exprime la destination ou le but ('Voy ___ la escuela') ?", "Para", ["Por", "Con", "Sin"], "'Para' exprime le but et la destination."),
+                    ("Si un triangle rectangle possède des côtés de 3 cm et 4 cm, la longueur du carré de l'hypoténuse est 3² + 4² =", "25", ["12", "14", "49"], "9 + 16 = 25."),
+                    ("Quel texte fondamental de 1789 proclame que les hommes naissent et demeurent libres et égaux en droits ?", "La Déclaration des Droits de l'Homme et du Citoyen", ["La Constitution", "Le Code Civil", "La Charte laïque"], "Rédigée en août 1789."),
+                    ("Combien font les 3/5 de 50 rouages ?", "30 rouages", ["20 rouages", "25 rouages", "35 rouages"], "(50 ÷ 5) × 3 = 30."),
+                    ("Quelle est la vitesse de la lumière dans le vide ?", "300 000 km/s", ["300 km/h", "3000 km/s", "1000 km/h"], "300 000 km/s."),
+                    ("Au passé simple, conjugue le verbe 'faire' avec 'il' :", "Il fit", ["Il faisait", "Il a fait", "Il fera"], "Au passé simple : il fit.")
+                ],
                 4: [
                     ("Un papyrus royal glisse de la main d'un squelette en armure ! C'est encore une lettre d'instruction de 1803 pour le navire L'Enterprize ! Pourquoi l'armateur exigeait-il d'acheter en priorité des captifs de moins de 24 ans ?", "Toute personne capturée dépassant l'âge de 24 ans subissait une taxe supplémentaire de 10 livres par tête", ["Ils étaient plus calmes", "Le bateau était trop petit", "C'était interdit aux adultes"], "Une surtaxe de 10 livres frappait chaque captif de plus de 24 ans."),
                     ("Sur la paroi du sarcophage de la reine Mathilde, l'inscription tirée de 'La Parure' de Maupassant la décrit comme 'élégante, gracieuse, souriante, folle de joie'. Quel procédé stylistique combine ici la succession d'adjectifs valorisants avec la formule finale ?", "Une hyperbole venant clore une gradation ascendante d'adjectifs", ["Une litote triste", "Une métaphore sombre", "Une comparaison simple"], "Gradation d'adjectifs valorisants se terminant par une hyperbole ('folle de joie')."),
-                    ("La statue d'un roi espagnol refuse de se pousser ! Pour la débloquer, tu dois indiquer son origine permanente et sa position actuelle : 'El monarca ___ argentino y la estatua ___ en el centro'. Quels verbes utiliser dans le bon ordre ?", "es / está", ["es / es", "está / es", "está / está"], "'Ser' pour l'origine permanente (es) et 'Estar' pour la localisation (está)."),
+                    ("La statue d'un roi espagnol refuse de se pousser ! Pour la débloquer, tu dois indiquer son origine permanente et sa position actuelle : 'El monarca ___ argentino y la estatua ___ en el centro'. Quels verbes utiliser dans le bon ordre ?", "El monarca es argentino y la estatua está en el centro de la tumba", ["es / es", "está / es", "está / está"], "'Ser' pour l'origine permanente (es) et 'Estar' pour la localisation (está)."),
                     ("Le spectre d'un prince anglais exige que tu lui demandes quel était le métier de son royal paternel. Quel mot interrogatif complète correctement : '___ does his father do for a living?' ?", "What", ["Where", "Which", "Why"], "'What' est le pronom interrogatif utilisé pour demander une profession."),
                     ("Le cadenas du sarcophage demande la forme irréductible de la fraction 21/35. En divisant le haut et le bas par 7, quel numérateur obtient-on dans a/5 ?", "3", ["7", "21", "5"], "21 ÷ 7 = 3. La fraction irréductible est 3/5."),
                     ("Une fiole scellée contenant du gaz CO₂ menace d'exploser sur le tombeau ! De combien d'atomes de carbone et d'oxygène cette molécule est-elle constituée ?", "Un atome de carbone et deux atomes d'oxygène", ["Deux atomes de carbone et un atome d'oxygène", "Un atome d'azote et trois d'oxygène", "Trois atomes de carbone"], "CO₂ = 1 atome de carbone (C) et 2 atomes d'oxygène (O₂)."),
                     ("Un globe terrestre géant pivote sur son axe. Quelle est la cause astronomique principale qui explique pourquoi les températures varient entre l'équateur et les poles ?", "L'inclinaison des rayons solaires arrivant à la surface de la Terre", ["La distance fixe de la Lune", "Le vent de l'espace", "L'épaisseur du noyau terrestre"], "L'inclinaison des rayons solaires fait varier l'énergie reçue selon la latitude."),
                     ("Les yeux de rubis de la statue royale s'allument quand tu approches ! Quels sont les 3 maillons de la chaîne d'information qui lui permettent de te détecter, réfléchir et lancer l'alerte ?", "Acquérir -> Traiter -> Communiquer", ["Alimenter -> Distribuer -> Transmettre", "Convertir -> Capter -> Bloquer", "Entrer -> Sortir -> Effacer"], "Acquérir (détecter), Traiter (réfléchir), Communiquer (lancer l'alerte)."),
-                    ("Le fantôme d'un juge du XVIIIe siècle bloque l'escalier. Quel grand philosophe des Lumières a rédigé le Traité sur la tolérance pour dénoncer le fanatisme religieux et réhabiliter Jean Calas ?", "Voltaire", ["Rousseau", "Montesquieu", "Diderot"], "Voltaire s'est engagé dans l'affaire Calas et a écrit le Traité sur la tolérance."),
+                    ("Le fantôme d'un juge du XVIIIe siècle bloque l'escalier. Quel grand philosophe des Lumières a rédigé le Traité sur la tolérance pour dénoncer le fanatisme religieux et réhabiliter Jean Calas ?", "Voltaire", ["Rousseau", "Montesquieu", "Diderot"], "Voltaire s'est engagé dans l'affaire Calas et a écrit le 'Traité sur la tolérance'."),
                     ("Deux ombres royales rejouent le dialogue de La Parure. Quelle différence oppose la question sincère de M. Loisel ('Qu'as-tu ?') à la question-reproche de sa femme ('Que veux-tu que je mette...') ?", "M. Loisel pose une question sincère par inquiétude, tandis que Mme Loisel utilise une question rhétorique qui constitue un reproche", ["C'est l'inverse", "Aucune différence", "Les deux crient"], "M. Loisel s'inquiète sincèrement alors que sa femme fait un reproche indirect."),
-                    ("Même le roi d'Espagne retrouve le sourire le week-end : 'El sábado, el rey ___ bien porque llega el fin de semana'. Quel verbe pronominal sentirse au présent emploie-t-on ?", "se siente", ["se sienta", "siente", "se sentamos"], "Sentirse se conjugue 'se siente' au présent avec diphtongue (e -> ie)."),
-                    ("Pour apaiser l'esprit d'un roi anglais tyrannique, tu dois associer les traits de caractère opposés. Quel est l'antonyme correct de generous (généreux) et de quiet (calme) ?", "mean / noisy", ["kind / happy", "tidy / bad", "polite / fast"], "Généreux <-> Mean (radin) ; Quiet <-> Noisy (bruyant)."),
-                    ("Le couvercle d'un sarcophage refuse de s'ouvrir avec des nombres décimaux finis ! Quelle fraction parmi 1/2, 1/4 et 1/3 possède une écriture décimale infinie (0,3333...) ?", "1/3", ["1/2", "1/4", "3/4"], "1/3 = 0,333333... est une écriture décimale infinie."),
-                    ("La poussière sacrée du tombeau contient une poudre magique composée de 1 Azote (N), 4 Hydrogène (H), 1 Phosphore (P) et 4 Oxygène (O). Dans quel ordre s'écrit sa formule brute ?", "NH₄PO₄", ["N4HPO4", "H4NPO", "PO4NH"], "La formule brute s'écrit NH₄PO₄."),
-                    ("L'aspirateur automatique de poussière pharaonique est bloqué ! Quelle solution technique (composant) assure la fonction 'Aspirer la poussière' dans son schéma FAST ?", "Les turbines d'aspiration", ["Les roues directrices", "La batterie", "L'interrupteur"], "Les turbines créent la dépression d'air permettant l'aspiration."),
-                    ("Une fresque céleste montre la Terre tournant autour du Soleil en 365,25 jours. Quel nom scientifique porte ce long voyage annuel d'un tour complet ?", "La révolution", ["La rotation", "L'éclipse", "La précession"], "Le mouvement de la Terre autour du Soleil s'appelle la révolution."),
-                    ("Pour compléter un vers écrit en espagnol sur le tombeau d'une reine, tu dois conjuguer le verbe vivir au présent avec le sujet ellas : 'Ellas ___ en el palacio real'.", "viven", ["vive", "vivimos", "vivís"], "Vivir avec ellas se conjugue 'viven'."),
-                    ("Le spectre d'un duc anglais s'incline poliment et te dit 'Thank you!'. Afin de ne pas le froisser, tu dois lui répondre 'de rien' dans sa langue. Quelle est la formule de politesse exacte ?", "You're welcome!", ["Yes please!", "Excuse me!", "Good night!"], "'You're welcome!' = De rien / Je vous en prie."),
-                    ("Pour ouvrir la dernière grille avant la couronne, identifie la liste de mots appartenant au champ lexical du succès éclatant lors d'un bal !", "gloire, victoire, plaisir, joie, succès", ["tristesse, honte, peur, obscurité", "colère, ennui, dette, perte", "sommeil, fatigue, froid, bruit"], "Ces termes caractérisent le succès et le triomphe."),
-                    ("Devant le grand sarcophage d'or, le spectre du Roi exige que tu nommes le mouvement des philosophes du XVIIIe siècle (Voltaire, Rousseau) qui ont éclairé l'Europe contre l'absolutisme !", "Les Lumières", ["L'Humanisme", "Le Romantisme", "Le Renaissance"], "Le mouvement des Lumières défendait la raison et les libertés au XVIIIe siècle.")
+                    ("Même le roi d'Espagne retrouve le sourire le week-end : 'El sábado, el rey ___ bien porque llega el fin de semana.' Quel verbe pronominal sentirse conjugué au présent complète la phrase ?", "se siente", ["se sienta", "siente", "se sentamos"], "'Sentirse' se conjugue 'se siente' au présent avec diphtongue (e -> ie)."),
+                    ("Pour apaiser l'esprit d'un roi anglais tyrannique, tu dois associer les traits de caractère opposés. Quel est l'antonyme correct de generous (généreux) et de quiet (calme) ?", "generous / mean, quiet / noisy", ["generous / nice, quiet / calm", "generous / bad, quiet / slow", "generous / rich, quiet / dark"], "'Mean' est le contraire de généreux, 'noisy' le contraire de calme."),
+                    ("Le couvercle d'un sarcophage refuse de s'ouvrir avec des nombres décimaux finis ! Quelle fraction parmi 1/2, 1/4 et 1/3 possède une écriture décimale infinie (0,3333...) ?", "1/3", ["1/2", "1/4", "1/5"], "1/3 = 0,33333... (écriture décimale infinie)."),
+                    ("La poussière sacrée du tombeau contient une poudre magique composée de 1 Azote (N), 4 Hydrogène (H), 1 Phosphore (P) et 4 Oxygène (O). Dans quel ordre s'écrit sa formule brute ?", "NH₄PO₄", ["H₄NPO₄", "O₄PNH₄", "NPO₄H₄"], "Formule brute : NH₄PO₄."),
+                    ("L'aspirateur automatique de poussière pharaonique est bloqué ! Quelle solution technique (composant) assure la fonction 'Aspirer la poussière' dans son schéma FAST ?", "Les turbines d'aspiration", ["Les roues de transport", "Le câble secteur", "Le voyant LED"], "Les turbines créent le flux d'aspiration."),
+                    ("Une fresque céleste montre la Terre tournant autour du Soleil en 365,25 jours. Quel nom scientifique porte ce long voyage annuel d'un tour complet ?", "La révolution", ["La rotation", "La dérive", "L'éclipse"], "La révolution complète autour du Soleil."),
+                    ("Pour compléter un vers écrit en espagnol sur le tombeau d'une reine, tu dois conjuguer le verbe vivir au présent avec le sujet ellas : 'Ellas ___ en el palacio real.'", "viven", ["vivimos", "vivís", "vive"], "Ellas viven."),
+                    ("Le spectre d'un duc anglais s'incline poliment et te dit 'Thank you!'. Afin de ne pas le froisser, quelle est la formule de politesse exacte pour répondre 'de rien' ?", "You're welcome!", ["Nice to meet you!", "See you later!", "Excuse me!"], "'You're welcome!' = de rien."),
+                    ("Pour ouvrir la dernière grille avant la couronne, identifie la liste de mots appartenant au champ lexical du succès éclatant de Mathilde lors du bal !", "Gloire, victoire, plaisir, joie, succès", ["Honte, peur, fuite, larmes, ruine", "Calme, sommeil, ombre, nuit, silence", "Froid, glace, vent, neige, givre"], "Champ lexical de la joie et du triomphe au bal."),
+                    ("Devant le grand sarcophage d'or, le spectre du Roi exige que tu nommes le mouvement des philosophes du XVIIIe siècle (Voltaire, Rousseau) qui ont éclairé l'Europe !", "Les Lumières", ["L'Humanisme", "Le Romantisme", "Le Surréalisme"], "Le mouvement des Lumières au XVIIIe siècle.")
                 ],
                 5: [
-                    ("Tu brûles du charbon pur sous un globe protecteur rempli de dioxygène. Quels réactifs s'épuisent lors de cette combustion ?", "Le carbone et le dioxygène", ["Le dioxyde de carbone et l'eau", "L'azote et l'hélium", "L'oxygène et l'hydrogène"], "La combustion consomme du carbone (C) et du dioxygène (O₂) pour produire du CO₂."),
-                    ("Quel adjectif qualifie le fait d'avoir une tente parfaitement ordonnée ('You put things in order, everything is neat') ?", "tidy", ["noisy", "generous", "bad-tempered"], "'Tidy' signifie rangé, ordonné."),
-                    ("Quel verbe d'état espagnol emploies-tu dans 'Miguelito ___ a la derecha del dibujo' ?", "está", ["es", "tiene", "hace"], "On utilise 'está' (verbe estar) pour la localisation."),
-                    ("Quelle est la valeur entière simplifiée obtenue en additionnant 12/15 + 1/5 ?", "1", ["13/20", "13/15", "2"], "1/5 = 3/15. Donc 12/15 + 3/15 = 15/15 = 1."),
-                    ("Dans quel ordre s'enchaînent les 3 fonctions de la chaîne d'information d'un automate ?", "Acquérir, Traiter, Communiquer", ["Alimenter, Distribuer, Transmettre", "Entrer, Sortir, Effacer", "Capter, Stocker, Effacer"], "Acquérir ➔ Traiter ➔ Communiquer."),
-                    ("Depuis quel grand port négrier britannique appareillait le navire L'Enterprize de 1803 ?", "Liverpool", ["Marseille", "Venise", "Lisbonne"], "Liverpool était l'un des premiers ports négriers européens au XVIIIe siècle."),
-                    ("Quelle phrase respecte parfaitement les règles de ponctuation du discours direct ?", "« Je suis la fille du puisatier », riposta-t-elle.", ["Je suis la fille du puisatier riposta t elle", "(Je suis la fille du puisatier) dit elle", "« Je suis la fille du puisatier » riposta t elle."], "Guillemets encadrant les paroles et virgule avant le verbe d'incise."),
-                    ("Ton cœur se met à battre à 160 bpm lors d'un sprint. Quel est l'objectif biologique exact pour tes muscles ?", "Augmenter le débit sanguin pour approvisionner plus rapidement les muscles en dioxygène", ["Refroidir le corps", "Arrêter la respiration", "Baisser la pression artérielle"], "Le cœur accélère pour apporter plus de dioxygène et de nutriments aux muscles en effort."),
-                    ("Pour demander à haute voix à quel fantôme appartient un objet troublant, quel mot interrogatif emploies-tu ?", "Whose", ["Where", "Which", "Why"], "'Whose' est le pronom interrogatif exprimant la possession."),
-                    ("Complète en espagnol avec la bonne diphtongue (e -> ie) : 'El lunes, el demonio se ___ fatal...'.", "siente", ["sienta", "sentamos", "sente"], "'Sentirse' se conjugue 'se siente' au présent."),
-                    ("Si tu roules à 20 km/h sur ton chariot, combien de temps mets-tu pour parcourir 5 km ?", "15 minutes (un quart d'heure)", ["30 minutes", "10 minutes", "45 minutes"], "5 km est le quart de 20 km, soit 15 minutes."),
-                    ("Quel bloc fonctionnel de la chaîne d'énergie joue le rôle de distributeur/interrupteur ?", "Distribuer (le relai ou l'interrupteur)", ["Alimenter", "Convertir", "Transmettre"], "Le bloc Distribuer aiguille l'énergie électrique vers l'actionneur."),
-                    ("Quel est l'impact planétaire majeur du dioxyde de carbone (CO₂) lorsqu'il s'accumule dans l'atmosphère ?", "C'est un gaz à effet de serre qui contribue au réchauffement climatique", ["Il détruit la vapeur d'eau", "Il refroidit le climat", "Il produit de l'oxygène"], "Le CO₂ est un gaz à effet de serre qui retient la chaleur dans l'atmosphère."),
-                    ("Dans la lettre d'instruction de 1803, quelle surtaxe financière frappait l'achat d'un captif de plus de 24 ans ?", "Une taxe supplémentaire de 10 livres par tête", ["Une amende de 100 euros", "Une interdiction de naviguer", "Une taxe de 2 livres"], "Une surtaxe de 10 livres frappait chaque captif de plus de 24 ans."),
-                    ("Transforme au discours indirect : Le professeur recommanda : « Faites bien vos exercices ! ».", "Le professeur recommanda de bien faire leurs exercices", ["Le professeur dit faites vos exercices", "Le professeur demande quoi", "Le professeur ordonna de faire mes devoirs"], "L'impératif au discours direct devient 'de + infinitif' au discours indirect."),
-                    ("Quelle formule anglaise polie dois-tu lancer au spectre pour lui demander de parler plus fort ?", "Can you speak up?", ["Shut up please!", "Where are you going?", "What is your name?"], "'Can you speak up?' = Pouvez-vous parler plus fort ?"),
-                    ("Quelles séries de conjugaisons au présent valident les formes de Ser, Estar et Tener ?", "Ser (soy, eres, es...), Estar (estoy, estás, está...), Tener (tengo, tienes, tiene...)", ["Ser (estoy...), Estar (soy...), Tener (he...)", "Ser (tengo...), Estar (soy...), Tener (estoy...)", "Invariables"], "Ser (soy, eres, es), Estar (estoy, estás, está), Tener (tengo, tienes, tiene)."),
-                    ("Une pyramide magique montre -2/3 dans la case de gauche et 2/3 dans celle de droite. Quelle est la somme au sommet ?", "0", ["4/3", "-4/3", "1"], "-2/3 + 2/3 = 0."),
-                    ("Quel nom porte la forme d'énergie directement recherchée par l'utilisateur (mouvement du chariot) ?", "L'énergie utile", ["L'énergie perdue", "L'énergie stockée", "L'énergie primaire"], "L'énergie utile est celle qui remplit la fonction souhaitée par l'utilisateur."),
-                    ("Comment appelle-t-on le foyer souterrain en profondeur d'où partent les ondes sismiques lors d'un séisme ?", "L'hypocentre (ou foyer)", ["L'épicentre", "Le cratère", "Le pôle"], "L'hypocentre (foyer) est le point de rupture en profondeur.")
+                    ("Pour allumer un brasero de survie au bord de la faille glaciale, tu brûles du charbon pur sous un globe protecteur rempli de dioxygène. Quels sont les deux réactifs qui s'épuisent progressivement lors de cette combustion ?", "Le carbone et le dioxygène", ["Le dioxyde de carbone et l'eau", "L'azote et l'hélium", "Le fer et le soufre"], "C + O₂ -> CO₂. Les réactifs consommés sont le carbone et le dioxygène."),
+                    ("Le spectre du gardien inspecte ton campement au bord du gouffre et bougonne en anglais : 'You put things in order, everything is neat...'. Quel adjectif qualifie une personne ordonnée ?", "Tidy", ["Messy", "Bad-tempered", "Noisy"], "'Tidy' = ordonné."),
+                    ("Pour replacer Miguelito à droite sur le schéma du Portail en espagnol, quel verbe d'état utilises-tu dans 'Miguelito ___ a la derecha del dibujo' ?", "está", ["es", "tiene", "hace"], "L'état temporaire / localisation s'exprime avec 'estar' (está)."),
+                    ("Une lourde herse de givre bloque l'accès au gouffre. Pour la soulever, tu dois additionner les fractions 12/15 + 1/5. Quelle est la valeur entière simplifiée exacte ?", "1", ["13/20", "13/15", "2"], "1/5 = 3/15. Donc 12/15 + 3/15 = 15/15 = 1."),
+                    ("L'automate gardien du Portail s'éveille ! Dans quel ordre exact s'enchaînent les 3 fonctions de son 'cerveau' mécanique pour détecter, réfléchir et lancer l'alerte ?", "Acquérir -> Traiter -> Communiquer", ["Alimenter -> Distribuer -> Transmettre", "Entrer -> Sortir -> Bloquer", "Capter -> Stocker -> Effacer"], "Acquérir (détecter) -> Traiter (réfléchir) -> Communiquer (alerter)."),
+                    ("Un vieux registre de bord gelé flotte dans la brume. De quel grand port négrier britannique le navire L'Enterprize avait-il appareillé en 1803 ?", "Liverpool", ["Marseille", "Venise", "Lisbonne"], "Liverpool était le premier port négrier britannique."),
+                    ("Quelle phrase respecte parfaitement les règles de ponctuation (guillemets, virgule) et l'incise du discours direct ?", "« Je suis la fille du puisatier », riposta-t-elle.", ["« Je suis la fille du puisatier riposta-t-elle »", "(Je suis la fille du puisatier), riposta-t-elle", "[Je suis la fille du puisatier] riposta-t-elle"], "Guillemets et virgule avant l'incise avec verbe de parole."),
+                    ("Ton cœur accélère à 160 pulsations/min lors du sprint. Quel est l'objectif biologique exact pour tes muscles ?", "Augmenter l'apport en dioxygène et nutriments aux muscles", ["Refroidir le corps", "Ralentir la digestion", "Stopper la transpiration"], "Fournir plus de dioxygène (O₂) et de nutriments aux muscles."),
+                    ("Tu ramasses une clé d'or tombée dans la neige. Pour demander à qui appartient cet objet en anglais, quel mot interrogatif emploies-tu ?", "Whose", ["Where", "Which", "Why"], "'Whose' est le mot interrogatif de possession."),
+                    ("Complète la phrase en espagnol avec la bonne diphtongue (e -> ie) : 'El lunes, el demonio se ___ fatal...'", "siente", ["sienta", "siente", "sentamos"], "'Sentirse' fait diphtongue 'se siente' au présent."),
+                    ("Tu roules à la vitesse constante de 20 km/h sur ton chariot. Combien de minutes mets-tu pour parcourir 5 km ?", "15 minutes", ["30 minutes", "10 minutes", "45 minutes"], "5 km est le quart de 20 km, soit 15 minutes."),
+                    ("Pour orienter l'énergie de la batterie vers le moteur de la porte blindée, quel bloc fonctionnel joue le rôle de distributeur/interrupteur ?", "Distribuer", ["Alimenter", "Convertir", "Transmettre"], "L'interrupteur/relai assure la fonction Distribuer."),
+                    ("Le brasero dégage du dioxyde de carbone (CO₂). Quel est l'impact planétaire majeur de ce gaz s'il s'accumule dans l'atmosphère ?", "C'est un gaz à effet de serre qui contribue au réchauffement climatique", ["Il détruit la couche d'ozone", "Il refroidit le climat", "Il fabrique de l'eau"], "Le CO₂ est un gaz à effet de serre responsable du réchauffement."),
+                    ("En relisant la lettre d'instruction de 1803, quelle surtaxe financière frappait l'achat d'un captif de plus de 24 ans ?", "Une taxe supplémentaire de 10 livres par tête", ["Une amende de 100 euros", "Une interdiction de naviguer", "Une taxe de 2 livres"], "Surtaxe de 10 livres par personne de plus de 24 ans."),
+                    ("Transforme au discours indirect : Le professeur recommanda : 'Faites bien vos exercices !'", "Le professeur recommanda de bien faire leurs exercices", ["Le professeur dit faites vos exercices", "Le professeur demande quoi", "Le professeur ordonna de faire mes devoirs"], "L'impératif au discours direct devient 'de + infinitif'."),
+                    ("Quelle formule anglaise polie dois-tu utiliser pour demander à quelqu'un de parler plus fort ?", "Can you speak up please?", ["Can you sit down?", "Where are you going?", "Thank you very much!"], "'Speak up' = parler plus fort."),
+                    ("Quelles séries de conjugaisons au présent valident les formes des verbes espagnols Ser, Estar et Tener ?", "Ser (soy, eres, es...), Estar (estoy, estás, está...), Tener (tengo, tienes, tiene...)", ["Ser (estoy...), Estar (soy...)", "Tener (soy...)", "Tener (estoy...)"], "Conjugaisons exactes au présent."),
+                    ("Dans la pyramide magique, si la case de gauche contient -2/3 et celle de droite 2/3, quelle valeur obtient-on en les additionnant au sommet ?", "0", ["4/3", "-4/3", "1"], "(-2/3) + (2/3) = 0."),
+                    ("La trottinette à vapeur transforme l'énergie thermique en mouvement de rotation. Quel nom porte cette énergie recherchée ?", "L'énergie utile", ["L'énergie perdue", "L'énergie nucléaire", "L'énergie solaire"], "L'énergie utile est la forme d'énergie directement recherchée."),
+                    ("Au bord du Portail du Cauchemar, de violentes secousses se déclenchent. Comment appelle-t-on le foyer souterrain d'où partent les ondes sismiques ?", "L'hypocentre (ou foyer)", ["L'épicentre", "Le cratère", "Le pôle"], "L'hypocentre est le lieu en profondeur où se produit la rupture.")
                 ]
             }
-            
-            q_curr_lucas = q_raw_lucas.get(j_sel, q_raw_lucas[1])
+
+            q_list_curr_l = q_raw_lucas.get(j_sel, q_raw_lucas[1])
             
             with st.form(key=f"f_lucas_{j_sel}"):
                 user_ans_l = []
-                for idx, item in enumerate(q_curr_lucas):
+                for idx, item in enumerate(q_list_curr_l):
                     qt, qcorr, qwrongs, qexp = item
                     q_id = f"lucas_{j_sel}_{idx}"
                     opts = get_shuffled_options(q_id, qcorr, qwrongs)
@@ -964,4 +1075,4 @@ else:
     # --- TAB 3 : LE GRIMOIRE DES SORTILÈGES ---
     with tab_grimoire_l:
         st.subheader("📖 Le Grimoire des Sortilèges — Fiches de Révision 4ème")
-        display_document_if_exists([["grimoire", "lucas"], ["grimoire", "4°"], ["grimoire", "4"], ["grimoire", "sortilege"]], "Le Grimoire des Sortilèges - Lucas 4ème", "grimoire_lucas")
+        display_document_if_exists([["grimoire_lucas"], ["grimoire", "lucas"], ["sortilege"]], "Le Grimoire des Sortilèges - Lucas 4ème", "grimoire_lucas")
