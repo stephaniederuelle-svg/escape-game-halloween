@@ -294,24 +294,18 @@ st.markdown("""
         color: #FFFFFF !important;
     }
     
-    /* Style personnalisé pour l'expander de l'indice */
-    div[data-testid="stExpander"], .stExpander {
+    /* STYLISATION DU GRIMOIRE DANS L'EXPANDER DE LA QUÊTE */
+    .stExpander {
         background-color: #2D1442 !important;
-        border: 2px solid #7B2CBF !important;
-        border-radius: 10px !important;
-        margin-top: 5px !important;
-        margin-bottom: 15px !important;
+        border: 2px solid #00FFCC !important;
+        border-radius: 14px !important;
+        margin-bottom: 20px !important;
     }
-    div[data-testid="stExpander"] summary, .stExpander summary, div[data-testid="stExpander"] summary * {
-        color: #00FFCC !important;
-        font-weight: bold !important;
-        font-size: 1.1rem !important;
+    .stExpander details summary p, .stExpander details summary span {
+        color: #FF9E00 !important;
+        font-weight: 900 !important;
+        font-size: 1.25rem !important;
     }
-    div[data-testid="stExpander"] div[data-testid="stExpanderDetails"], div[data-testid="stExpander"] p, div[data-testid="stExpander"] span {
-        color: #E0AAFF !important;
-        font-size: 1.1rem !important;
-    }
-
     </style>
 """, unsafe_allow_html=True)
 
@@ -748,6 +742,9 @@ if st.session_state.selected_hero == "lea":
 
             q_list_curr = q_raw_lea.get(j_sel, q_raw_lea[1])
             
+            with st.expander("📖 📜 Feuilleter Le Grimoire du Savoir pendant l'épreuve (Révisions & Fiches)", expanded=False):
+                display_document_if_exists([["grimoire_lea"], ["grimoire", "lea"], ["savoir"]], "Le Grimoire du Savoir - Léa 6ème", "grimoire_lea_quest")
+            
             with st.form(key=f"f_lea_{j_sel}"):
                 user_ans = []
                 for idx, item in enumerate(q_list_curr):
@@ -755,8 +752,6 @@ if st.session_state.selected_hero == "lea":
                     q_id = f"lea_{j_sel}_{idx}"
                     opts = get_shuffled_options(q_id, qcorr, qwrongs)
                     chosen = st.radio(f"**{qt}**", opts, key=f"r_{q_id}")
-                    with st.expander("💡 Besoin d'un indice ?"):
-                        st.markdown(f"💡 <span style='color:#E0AAFF;'>{qexp}</span>", unsafe_allow_html=True)
                     user_ans.append((qt, chosen, qcorr, qexp, q_id))
                 
                 sub = st.form_submit_button("📜 Valider l'Épreuve au Maître du Manoir")
@@ -1040,6 +1035,9 @@ else:
 
             q_list_curr_l = q_raw_lucas.get(j_sel, q_raw_lucas[1])
             
+            with st.expander("📖 📜 Feuilleter Le Grimoire des Sortilèges pendant l'épreuve (Révisions & Fiches)", expanded=False):
+                display_document_if_exists([["grimoire_lucas"], ["grimoire", "lucas"], ["sortilege"]], "Le Grimoire des Sortilèges - Lucas 4ème", "grimoire_lucas_quest")
+            
             with st.form(key=f"f_lucas_{j_sel}"):
                 user_ans_l = []
                 for idx, item in enumerate(q_list_curr_l):
@@ -1047,8 +1045,6 @@ else:
                     q_id = f"lucas_{j_sel}_{idx}"
                     opts = get_shuffled_options(q_id, qcorr, qwrongs)
                     chosen = st.radio(f"**{qt}**", opts, key=f"r_{q_id}")
-                    with st.expander("💡 Besoin d'un indice ?"):
-                        st.markdown(f"💡 <span style='color:#E0AAFF;'>{qexp}</span>", unsafe_allow_html=True)
                     user_ans_l.append((qt, chosen, qcorr, qexp, q_id))
                 
                 sub_l = st.form_submit_button("⚡ Activer l'Autel d'Évasion")
